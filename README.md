@@ -22,7 +22,7 @@ import { TlsManager } from 'tls-devicer';
 
 const deviceManager = new DeviceManager(...);
 const tlsManager = new TlsManager({
-  licenseKey: process.env.TLS_DEVICER_LICENSE_KEY
+  licenseKey: process.env.DEVICER_LICENSE_KEY
 });
 
 tlsManager.registerWith(deviceManager);
