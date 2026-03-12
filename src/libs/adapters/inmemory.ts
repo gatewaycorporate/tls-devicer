@@ -3,7 +3,7 @@
 // ────────────────────────────────────────────────────────────
 
 import { randomUUID } from 'node:crypto';
-import type { TlsSnapshot, TlsProfile } from '../types.js';
+import type { TlsSnapshot, TlsProfile } from '../../types.js';
 
 export interface TlsStorage {
   save(snapshot: Omit<TlsSnapshot, 'id'>): TlsSnapshot;
