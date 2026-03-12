@@ -2,7 +2,7 @@
 
 ## Developed by Gateway Corporate Solutions
 
-**TLS Fingerprinting Middleware** for the FP-Devicer Intelligence Suite.
+**TLS Intelligence Middleware** for the FP-Devicer Intelligence Suite.
 
 Passively collect and match JA4 fingerprints, TLS extensions, cipher order,
 HTTP/2 settings, and header consistency to strengthen device identity.
