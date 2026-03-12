@@ -50,6 +50,11 @@ http {
 }
 ```
 
+### Documentation
+
+This project uses typedoc and autodeploys via GitHub Pages. You can view the
+generated documentation [here](https://gatewaycorporate.github.io/tls-devicer/).
+
 ## Installation
 
 You can install ip-devicer and tls-devicer alongside FP-Devicer with
@@ -68,7 +73,7 @@ Published under the **Business Source License 1.1 (BSL-1.1)**
 - Pro tier can operate on a single server and has no device count limits
 - Enterprise can operate on any number of servers and has no device count limits
 
-Pass the key in the constructor to remove restrictions.
+Pass the key in the constructor to remove restrictions
 
 ## Obtaining a Key
 
