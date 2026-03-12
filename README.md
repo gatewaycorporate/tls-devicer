@@ -17,24 +17,24 @@ tls-devicer is designed to integrate seamlessly with FP-Devicer by use of the
 TLS headers.
 
 ```typescript
-import { DeviceManager } from 'devicer.js';
-import { TlsManager } from 'tls-devicer';
+import { createInMemoryAdapter, DeviceManager } from "devicer.js";
+import { TlsManager } from "tls-devicer";
 
-const deviceManager = new DeviceManager(...);
+const deviceManager = new DeviceManager(createInMemoryAdapter());
 const tlsManager = new TlsManager({
-  licenseKey: process.env.DEVICER_LICENSE_KEY
+	licenseKey: process.env.DEVICER_LICENSE_KEY,
 });
 
 tlsManager.registerWith(deviceManager);
 
-app.post('/identify', async (req, res) => {
-  const result = await deviceManager.identify(req.body, {
-    tlsProfile: {
-      ja4: req.headers['x-ja4'],
-      extensions: req.headers['x-tls-extensions']?.split(','),
-      http2Settings: req.headers['x-http2-settings']
-    }
-  });
+app.post("/identify", async (req, res) => {
+	const result = await deviceManager.identify(req.body, {
+		tlsProfile: {
+			ja4: req.headers["x-ja4"],
+			extensions: req.headers["x-tls-extensions"]?.split(","),
+			http2Settings: req.headers["x-http2-settings"],
+		},
+	});
 });
 ```
 
