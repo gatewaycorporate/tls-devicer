@@ -1,3 +1,4 @@
+import { type LicenseTier } from '../libs/license.js';
 import type { TlsManagerOptions, TlsProfile, TlsSnapshot, TlsConsistency, IdentifyResult } from '../types.js';
 /**
  * Structural type for DeviceManager.identify so we avoid a hard dep on
@@ -27,13 +28,30 @@ interface DeviceManagerLike {
  * ```
  */
 export declare class TlsManager {
-    private readonly storage;
+    private storage;
     private readonly options;
-    private readonly hasLicense;
+    /** Resolved license info — available after {@link init} completes. */
+    private licenseInfo;
+    private initPromise;
     constructor(opts?: TlsManagerOptions);
+    private readonly _licenseKey;
+    /** The active license tier. Resolves to `'free'` until {@link init} completes. */
+    get tier(): LicenseTier;
+    /**
+     * Validate the Polar license key if one was supplied.
+     *
+     * Call this once at application startup before processing requests. Safe to
+     * await multiple times — subsequent calls return the cached promise.
+     */
+    init(): Promise<void>;
+    private _doInit;
     /**
      * Score an incoming `TlsProfile` against historical snapshots for `deviceId`,
      * persist the snapshot, and return a `TlsConsistency` report.
+     *
+     * Free-tier callers are limited to {@link FREE_TIER_MAX_DEVICES} unique
+     * devices. When the cap is reached, the profile for new device IDs is not
+     * persisted and a zero-signal `TlsConsistency` is returned.
      *
      * @param profile  - TLS signals collected for the current request.
      * @param deviceId - The resolved device identifier from DeviceManager.

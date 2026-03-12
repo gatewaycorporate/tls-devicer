@@ -1,4 +1,6 @@
 export { TlsManager } from './core/TlsManager.js';
+export { validateLicense, evictLicenseCache, POLAR_ORGANIZATION_ID, POLAR_BENEFIT_IDS, FREE_TIER_MAX_DEVICES, FREE_TIER_MAX_HISTORY, } from './libs/license.js';
+export type { LicenseTier, LicenseInfo } from './libs/license.js';
 export type { TlsManagerOptions, Http2SettingsMap, TlsProfile, TlsSnapshot, TlsConsistency, TlsIdentifyContext, IdentifyResult, EnrichedIdentifyResult, } from './types.js';
 export { createTlsMiddleware, buildTlsProfile, extractProfileFromSocket, type NextFunction, type TlsRequest, } from './libs/middleware.js';
 export { extractTlsFromHeaders, parseJa4, parseCodeList, } from './libs/extractors/Ja4Extractor.js';

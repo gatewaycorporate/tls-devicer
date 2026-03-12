@@ -1,5 +1,7 @@
 // ── Core ──────────────────────────────────────────────────────
 export { TlsManager } from './core/TlsManager.js';
+// ── Licensing ─────────────────────────────────────────────────
+export { validateLicense, evictLicenseCache, POLAR_ORGANIZATION_ID, POLAR_BENEFIT_IDS, FREE_TIER_MAX_DEVICES, FREE_TIER_MAX_HISTORY, } from './libs/license.js';
 // ── Middleware ────────────────────────────────────────────────
 export { createTlsMiddleware, buildTlsProfile, extractProfileFromSocket, } from './libs/middleware.js';
 // ── Extractors ────────────────────────────────────────────────

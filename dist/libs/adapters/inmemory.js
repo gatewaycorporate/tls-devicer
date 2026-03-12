@@ -42,6 +42,9 @@ export function createTlsStorage(maxPerDevice = 50) {
                 store.clear();
             }
         },
+        size() {
+            return store.size;
+        },
     };
 }
 // ── Profile serialiser (for TLSH input) ──────────────────────
