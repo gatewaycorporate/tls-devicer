@@ -7,6 +7,13 @@ import {
   computeConsistencyScore,
   computeConfidenceBoost,
 } from '../libs/scoring.js';
+import {
+  validateLicense,
+  type LicenseInfo,
+  type LicenseTier,
+  FREE_TIER_MAX_DEVICES,
+  FREE_TIER_MAX_HISTORY,
+} from '../libs/license.js';
 import type {
   TlsManagerOptions,
   TlsProfile,
@@ -17,9 +24,16 @@ import type {
   EnrichedIdentifyResult,
 } from '../types.js';
 
-const FREE_TIER_MAX_HISTORY = 10;
 const LICENSE_WARN =
-  '[tls-devicer] No license key — history capped at 10 snapshots per device.';
+  '[tls-devicer] No license key — running on the free tier ' +
+  `(${FREE_TIER_MAX_HISTORY} history snapshots/device, ${FREE_TIER_MAX_DEVICES.toLocaleString()} device limit). ` +
+  'Visit https://polar.sh to upgrade to Pro or Enterprise.';
+const LICENSE_INVALID_WARN =
+  '[tls-devicer] License key could not be validated — falling back to the free tier. ' +
+  'Check your key or network connectivity.';
+const DEVICE_LIMIT_WARN =
+  `[tls-devicer] Free-tier device limit reached (${FREE_TIER_MAX_DEVICES.toLocaleString()} devices). ` +
+  'New device will not be tracked. Upgrade to Pro or Enterprise to remove this limit.';
 
 /**
  * Structural type for DeviceManager.identify so we avoid a hard dep on
@@ -53,7 +67,7 @@ interface DeviceManagerLike {
  * ```
  */
 export class TlsManager {
-  private readonly storage: TlsStorage;
+  private storage: TlsStorage;
   private readonly options: Required<
     Pick<
       TlsManagerOptions,
@@ -65,18 +79,26 @@ export class TlsManager {
       | 'maxHistoryPerDevice'
     >
   >;
-  private readonly hasLicense: boolean;
+  /** Resolved license info — available after {@link init} completes. */
+  private licenseInfo: LicenseInfo = {
+    valid: false,
+    tier: 'free',
+    maxDevices: FREE_TIER_MAX_DEVICES,
+  };
+  private initPromise: Promise<void> | null = null;
 
   constructor(opts: TlsManagerOptions = {}) {
-    this.hasLicense = Boolean(opts.licenseKey?.trim());
+    const hasKey = Boolean(opts.licenseKey?.trim());
 
-    if (!this.hasLicense) {
+    if (!hasKey) {
       console.warn(LICENSE_WARN);
     }
 
-    const maxHistory = this.hasLicense
+    // Optimistic history depth when a key is supplied — init() will
+    // downgrade to FREE_TIER_MAX_HISTORY if Polar rejects the key.
+    const maxHistory = hasKey
       ? (opts.maxHistoryPerDevice ?? 50)
-      : FREE_TIER_MAX_HISTORY;
+      : (opts.maxHistoryPerDevice ?? FREE_TIER_MAX_HISTORY);
 
     this.options = {
       enableJa4:               opts.enableJa4               ?? true,
@@ -87,7 +109,49 @@ export class TlsManager {
       maxHistoryPerDevice:     maxHistory,
     };
 
+    this._licenseKey = opts.licenseKey?.trim();
     this.storage = createTlsStorage(maxHistory);
+  }
+
+  // Store licenseKey separately so constructor can reference it
+  private readonly _licenseKey: string | undefined;
+
+  // ── Accessors ────────────────────────────────────────────
+
+  /** The active license tier. Resolves to `'free'` until {@link init} completes. */
+  get tier(): LicenseTier {
+    return this.licenseInfo.tier;
+  }
+
+  // ── Lifecycle ─────────────────────────────────────────────
+
+  /**
+   * Validate the Polar license key if one was supplied.
+   *
+   * Call this once at application startup before processing requests. Safe to
+   * await multiple times — subsequent calls return the cached promise.
+   */
+  async init(): Promise<void> {
+    if (this.initPromise) return this.initPromise;
+    this.initPromise = this._doInit();
+    return this.initPromise;
+  }
+
+  private async _doInit(): Promise<void> {
+    if (!this._licenseKey) return;
+
+    const info = await validateLicense(this._licenseKey);
+    this.licenseInfo = info;
+
+    if (!info.valid) {
+      console.warn(LICENSE_INVALID_WARN);
+      // If we over-provisioned history, recreate storage with free-tier cap.
+      if (this.options.maxHistoryPerDevice > FREE_TIER_MAX_HISTORY) {
+        this.storage = createTlsStorage(FREE_TIER_MAX_HISTORY);
+        (this.options as { maxHistoryPerDevice: number }).maxHistoryPerDevice =
+          FREE_TIER_MAX_HISTORY;
+      }
+    }
   }
 
   // ── Core analysis ──────────────────────────────────────────
@@ -96,10 +160,37 @@ export class TlsManager {
    * Score an incoming `TlsProfile` against historical snapshots for `deviceId`,
    * persist the snapshot, and return a `TlsConsistency` report.
    *
+   * Free-tier callers are limited to {@link FREE_TIER_MAX_DEVICES} unique
+   * devices. When the cap is reached, the profile for new device IDs is not
+   * persisted and a zero-signal `TlsConsistency` is returned.
+   *
    * @param profile  - TLS signals collected for the current request.
    * @param deviceId - The resolved device identifier from DeviceManager.
    */
   analyze(profile: TlsProfile, deviceId: string): TlsConsistency {
+    // ── Free-tier device cap ───────────────────────────────────
+    const isKnown = this.storage.getLatest(deviceId) !== null;
+    if (
+      !isKnown &&
+      this.licenseInfo.tier === 'free' &&
+      this.storage.size() >= FREE_TIER_MAX_DEVICES
+    ) {
+      console.warn(DEVICE_LIMIT_WARN);
+      return {
+        consistencyScore: 0,
+        ja4Match: null,
+        ja3Match: null,
+        cipherJaccard: 0,
+        extensionJaccard: 0,
+        http2Score: 0,
+        headerOrderScore: 0,
+        headerValueScore: 0,
+        tlshScore: null,
+        isNewDevice: true,
+        factors: ['device-limit-exceeded'],
+      };
+    }
+
     const history = this.storage.getHistory(deviceId);
 
     const consistency = computeConsistencyScore(

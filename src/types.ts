@@ -5,7 +5,19 @@
 // ── Constructor options ──────────────────────────────────────
 
 export interface TlsManagerOptions {
-  /** BSL-1.1 license key — unlocks full history and advanced scoring */
+  /**
+   * Polar license key that unlocks Pro or Enterprise tier features.
+   *
+   * | Tier         | Price    | Device limit | Servers   |
+   * |--------------|---------|--------------|-----------|
+   * | Free         | $0/mo    | 10,000       | —         |
+   * | Pro          | $49/mo   | Unlimited    | 1 server  |
+   * | Enterprise   | $299/mo  | Unlimited    | Unlimited |
+   *
+   * Extended history and unlimited devices require Pro or Enterprise.
+   * Obtain a key at https://polar.sh and configure {@link POLAR_ORGANIZATION_ID}
+   * and {@link POLAR_BENEFIT_IDS} in `src/libs/license.ts`.
+   */
   licenseKey?: string;
   /** Max TLS snapshots kept per deviceId in memory. Default: 50 (10 without key) */
   maxHistoryPerDevice?: number;

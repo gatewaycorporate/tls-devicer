@@ -10,6 +10,8 @@ export interface TlsStorage {
   getHistory(deviceId: string, limit?: number): TlsSnapshot[];
   getLatest(deviceId: string): TlsSnapshot | null;
   clear(deviceId?: string): void;
+  /** Number of unique device IDs currently stored. */
+  size(): number;
 }
 
 /**
@@ -53,6 +55,10 @@ export function createTlsStorage(maxPerDevice = 50): TlsStorage {
       } else {
         store.clear();
       }
+    },
+
+    size(): number {
+      return store.size;
     },
   };
 }
