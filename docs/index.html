@@ -6,9 +6,9 @@ HTTP/2 settings, and header consistency to strengthen device identity.</p>
 <p>Part of the <a href="https://github.com/gatewaycorporate/fp-devicer">FP-Devicer</a> family
 — invisible to clients and extremely hard to spoof.</p>
 <p>Important: tls-devicer does not derive JA4 itself. It consumes JA4 or related
-TLS signals from headers injected by an upstream edge such as Cloudflare, HAProxy
-with custom logic, Envoy filters, or another TLS terminator that can compute and
-forward them.</p>
+TLS signals from headers injected by an upstream edge such as Cloudflare,
+HAProxy with custom logic, Envoy filters, or another TLS terminator that can
+compute and forward them.</p>
 <h2 id="usage" class="tsd-anchor-link">Usage<a href="#usage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>tls-devicer is designed to integrate seamlessly with FP-Devicer by use of the
 <code>registerWith</code> helper. This works best when your reverse proxy injects JA4 and
@@ -60,8 +60,9 @@ Cloudflare header through unchanged. <code>tls-devicer</code> supports both <cod
 <ol>
 <li>Use another edge or extension that computes JA4 and injects it before the
 request reaches your app.</li>
-<li>Run tls-devicer without JA4 and rely on the signals nginx can actually expose,
-such as header order and selected TLS metadata available from other headers.</li>
+<li>Run tls-devicer without JA4 and rely on the signals nginx can actually
+expose, such as header order and selected TLS metadata available from other
+headers.</li>
 </ol>
 <p>For plain nginx, do not expect native JA4, raw extension-order, or client HTTP/2
 SETTINGS extraction.</p>
