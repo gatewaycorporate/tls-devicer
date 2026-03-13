@@ -46,10 +46,10 @@
     "vitest": "^3.2.4"
   },
   "peerDependencies": {
-    "better-sqlite3": ">=9.0.0",
-    "devicer.js": "^1.5.9",
-    "ioredis": ">=5.0.0",
-    "pg": ">=8.0.0"
+    "devicer.js": "^1.5.10",
+    "better-sqlite3": "^12.6.2",
+    "ioredis": "^5.10.0",
+    "pg": "^8.20.0"
   },
   "peerDependenciesMeta": {
     "better-sqlite3": {

@@ -44,6 +44,21 @@ interface DeviceManagerLike {
     data: unknown,
     context?: Record<string, unknown>,
   ): Promise<IdentifyResult>;
+  registerIdentifyPostProcessor?(
+    name: string,
+    processor: (payload: {
+      result: IdentifyResult;
+      context?: Record<string, unknown>;
+    }) => Promise<{
+      result?: Record<string, unknown>;
+      enrichmentInfo?: Record<string, unknown>;
+      logMeta?: Record<string, unknown>;
+    } | void> | {
+      result?: Record<string, unknown>;
+      enrichmentInfo?: Record<string, unknown>;
+      logMeta?: Record<string, unknown>;
+    } | void,
+  ): () => void;
 }
 
 /**
@@ -67,6 +82,7 @@ interface DeviceManagerLike {
  * ```
  */
 export class TlsManager {
+  private static readonly DEVICE_MANAGER_PLUGIN_NAME = 'tls';
   private storage: TlsStorage;
   private readonly options: Required<
     Pick<
@@ -251,6 +267,52 @@ export class TlsManager {
    * is returned as-is when analysis throws.
    */
   registerWith(deviceManager: DeviceManagerLike): void {
+    if (typeof deviceManager.registerIdentifyPostProcessor === 'function') {
+      deviceManager.registerIdentifyPostProcessor(
+        TlsManager.DEVICE_MANAGER_PLUGIN_NAME,
+        ({ result, context }) => {
+          const ctx = (context ?? {}) as TlsIdentifyContext;
+          const profile = ctx.tlsProfile;
+          if (!profile) {
+            return;
+          }
+
+          const consistency = this.analyze(profile, result.deviceId);
+          const boost = computeConfidenceBoost(
+            consistency,
+            this.options.confidenceBoostWeight,
+          );
+          const boostedConfidence = Math.max(
+            0,
+            Math.min(100, result.confidence + boost),
+          );
+
+          return {
+            result: {
+              confidence: boostedConfidence,
+              matchConfidence: boostedConfidence,
+              tlsConsistency: consistency,
+              tlsConfidenceBoost: boost,
+            },
+            enrichmentInfo: {
+              consistencyScore: consistency.consistencyScore,
+              confidenceBoost: boost,
+              isNewDevice: consistency.isNewDevice,
+              factors: consistency.factors,
+            },
+            logMeta: {
+              consistencyScore: consistency.consistencyScore,
+              confidenceBoost: boost,
+              ja4Match: consistency.ja4Match,
+              ja3Match: consistency.ja3Match,
+              factors: consistency.factors,
+            },
+          };
+        },
+      );
+      return;
+    }
+
     const original = deviceManager.identify.bind(deviceManager);
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;

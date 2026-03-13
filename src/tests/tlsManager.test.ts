@@ -2,6 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { TlsManager } from '../core/TlsManager.js';
 import type { TlsProfile, IdentifyResult, EnrichedIdentifyResult } from '../types.js';
 
+const emptyEnrichmentInfo = {
+  plugins: [],
+  details: {},
+  failures: [],
+};
+
 // ── Fixtures ──────────────────────────────────────────────────
 
 const PROFILE_A: TlsProfile = {
@@ -36,6 +42,7 @@ function makeDeviceManager(deviceId = 'device-1') {
       confidence: 70,
       isNewDevice: false,
       matchConfidence: 70,
+      enrichmentInfo: emptyEnrichmentInfo,
     })),
   };
 }
@@ -91,6 +98,7 @@ describe('TlsManager.registerWith', () => {
         confidence: 99,
         isNewDevice: false,
         matchConfidence: 99,
+        enrichmentInfo: emptyEnrichmentInfo,
       })),
     };
     tlsManager.registerWith(deviceManager);
@@ -183,5 +191,45 @@ describe('TlsManager error resilience', () => {
     expect(result.confidence).toBe(70);
     expect(result.tlsConsistency).toBeUndefined();
     expect(result.tlsConfidenceBoost).toBeUndefined();
+  });
+
+  it('registers a DeviceManager post-processor when the hook API is available', () => {
+    const tlsManager = new TlsManager({ licenseKey: 'test-key' });
+    let registeredProcessor:
+      | ((payload: { result: IdentifyResult; context?: Record<string, unknown> }) => { result?: Record<string, unknown>; enrichmentInfo?: Record<string, unknown>; logMeta?: Record<string, unknown> } | void)
+      | undefined;
+
+    const deviceManager = {
+      identify: vi.fn(async (): Promise<IdentifyResult> => ({
+        deviceId: 'device-hook',
+        confidence: 70,
+        isNewDevice: false,
+        matchConfidence: 70,
+        enrichmentInfo: emptyEnrichmentInfo,
+      })),
+      registerIdentifyPostProcessor: vi.fn((name: string, processor: typeof registeredProcessor) => {
+        expect(name).toBe('tls');
+        registeredProcessor = processor;
+        return () => {};
+      }),
+    };
+
+    tlsManager.registerWith(deviceManager);
+
+    const outcome = registeredProcessor!({
+      result: {
+        deviceId: 'device-hook',
+        confidence: 70,
+        isNewDevice: false,
+        matchConfidence: 70,
+        enrichmentInfo: emptyEnrichmentInfo,
+      },
+      context: { tlsProfile: PROFILE_A },
+    });
+
+    expect(deviceManager.registerIdentifyPostProcessor).toHaveBeenCalledTimes(1);
+    expect(outcome?.result?.tlsConsistency).toBeDefined();
+    expect(outcome?.enrichmentInfo).toMatchObject({ consistencyScore: 100, confidenceBoost: 0 });
+    expect(outcome?.logMeta).toMatchObject({ consistencyScore: 100 });
   });
 });
