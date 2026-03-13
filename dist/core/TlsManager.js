@@ -32,6 +32,7 @@ const DEVICE_LIMIT_WARN = `[tls-devicer] Free-tier device limit reached (${FREE_
  * ```
  */
 export class TlsManager {
+    static DEVICE_MANAGER_PLUGIN_NAME = 'tls';
     storage;
     options;
     /** Resolved license info — available after {@link init} completes. */
@@ -175,6 +176,40 @@ export class TlsManager {
      * is returned as-is when analysis throws.
      */
     registerWith(deviceManager) {
+        if (typeof deviceManager.registerIdentifyPostProcessor === 'function') {
+            deviceManager.registerIdentifyPostProcessor(TlsManager.DEVICE_MANAGER_PLUGIN_NAME, ({ result, context }) => {
+                const ctx = (context ?? {});
+                const profile = ctx.tlsProfile;
+                if (!profile) {
+                    return;
+                }
+                const consistency = this.analyze(profile, result.deviceId);
+                const boost = computeConfidenceBoost(consistency, this.options.confidenceBoostWeight);
+                const boostedConfidence = Math.max(0, Math.min(100, result.confidence + boost));
+                return {
+                    result: {
+                        confidence: boostedConfidence,
+                        matchConfidence: boostedConfidence,
+                        tlsConsistency: consistency,
+                        tlsConfidenceBoost: boost,
+                    },
+                    enrichmentInfo: {
+                        consistencyScore: consistency.consistencyScore,
+                        confidenceBoost: boost,
+                        isNewDevice: consistency.isNewDevice,
+                        factors: consistency.factors,
+                    },
+                    logMeta: {
+                        consistencyScore: consistency.consistencyScore,
+                        confidenceBoost: boost,
+                        ja4Match: consistency.ja4Match,
+                        ja3Match: consistency.ja3Match,
+                        factors: consistency.factors,
+                    },
+                };
+            });
+            return;
+        }
         const original = deviceManager.identify.bind(deviceManager);
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;

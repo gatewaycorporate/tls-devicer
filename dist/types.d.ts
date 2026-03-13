@@ -123,6 +123,14 @@ export interface IdentifyResult {
     isNewDevice: boolean;
     matchConfidence: number;
     linkedUserId?: string;
+    enrichmentInfo: {
+        plugins: string[];
+        details: Record<string, Record<string, unknown>>;
+        failures: Array<{
+            plugin: string;
+            message: string;
+        }>;
+    };
 }
 export interface EnrichedIdentifyResult extends IdentifyResult {
     tlsConsistency?: TlsConsistency;

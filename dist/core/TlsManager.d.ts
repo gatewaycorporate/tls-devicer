@@ -6,6 +6,18 @@ import type { TlsManagerOptions, TlsProfile, TlsSnapshot, TlsConsistency, Identi
  */
 interface DeviceManagerLike {
     identify(data: unknown, context?: Record<string, unknown>): Promise<IdentifyResult>;
+    registerIdentifyPostProcessor?(name: string, processor: (payload: {
+        result: IdentifyResult;
+        context?: Record<string, unknown>;
+    }) => Promise<{
+        result?: Record<string, unknown>;
+        enrichmentInfo?: Record<string, unknown>;
+        logMeta?: Record<string, unknown>;
+    } | void> | {
+        result?: Record<string, unknown>;
+        enrichmentInfo?: Record<string, unknown>;
+        logMeta?: Record<string, unknown>;
+    } | void): () => void;
 }
 /**
  * TlsManager — passive TLS intelligence for the FP-Devicer Suite.
@@ -28,6 +40,7 @@ interface DeviceManagerLike {
  * ```
  */
 export declare class TlsManager {
+    private static readonly DEVICE_MANAGER_PLUGIN_NAME;
     private storage;
     private readonly options;
     /** Resolved license info — available after {@link init} completes. */
