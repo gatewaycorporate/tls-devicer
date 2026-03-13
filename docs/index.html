@@ -5,6 +5,10 @@
 HTTP/2 settings, and header consistency to strengthen device identity.</p>
 <p>Part of the <a href="https://github.com/gatewaycorporate/fp-devicer">FP-Devicer</a> family
 — invisible to clients and extremely hard to spoof.</p>
+<p>Important: tls-devicer does not derive JA4 itself. It consumes JA4 or related
+TLS signals from headers injected by an upstream edge such as Cloudflare, HAProxy
+with custom logic, Envoy filters, or another TLS terminator that can compute and
+forward them.</p>
 <h2 id="usage" class="tsd-anchor-link">Usage<a href="#usage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>tls-devicer is designed to integrate seamlessly with FP-Devicer by use of the
 <code>registerWith</code> helper. This works best when your reverse proxy injects JA4 and
@@ -13,15 +17,54 @@ TLS headers.</p>
 </code><button type="button">Copy</button></pre>
 
 <h2 id="recommended-setup-nginx" class="tsd-anchor-link">Recommended Setup (Nginx)<a href="#recommended-setup-nginx" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
-<pre><code class="nginx">http {
-    map $ssl_client_hello_ja4 $ja4 {
-        default $ssl_client_hello_ja4;
-    }
-    proxy_set_header X-JA4 $ja4;
-    proxy_set_header X-TLS-Extensions $ssl_client_hello_extensions;
+<p>Stock nginx cannot generate JA4 or expose ClientHello extension lists through
+variables. That means the following variables do not exist in standard nginx:</p>
+<ul>
+<li><code>$ssl_client_hello_ja4</code></li>
+<li><code>$ssl_client_hello_extensions</code></li>
+<li>a request variable for the client's raw HTTP/2 SETTINGS frame</li>
+</ul>
+<p>Use nginx as a pass-through layer for headers that were already added by an
+upstream edge.</p>
+<h3 id="cloudflare-to-nginx-to-app" class="tsd-anchor-link">Cloudflare to nginx to app<a href="#cloudflare-to-nginx-to-app" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>tls-devicer accepts <code>cf-ja4</code> directly, but many applications prefer normalizing
+that to <code>x-ja4</code> before it reaches Node.</p>
+<pre><code class="nginx">server {
+	listen 443 ssl http2;
+	server_name example.com;
+
+	ssl_certificate /etc/letsencrypt/live/example/fullchain.pem;
+	ssl_certificate_key /etc/letsencrypt/live/example/privkey.pem;
+
+	location / {
+		proxy_pass http://127.0.0.1:3000;
+
+		proxy_set_header Host $host;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header X-Forwarded-Proto $scheme;
+
+		# Cloudflare-managed JA4 header forwarded to your app.
+		proxy_set_header X-JA4 $http_cf_ja4;
+
+		# Optional JA3 alias if your upstream provides it.
+		proxy_set_header X-JA3 $http_cf_ja3_fingerprint;
+	}
 }
 </code><button type="button">Copy</button></pre>
 
+<p>In your application, either consume <code>x-ja4</code> as shown above or pass the raw
+Cloudflare header through unchanged. <code>tls-devicer</code> supports both <code>x-ja4</code> and
+<code>cf-ja4</code>.</p>
+<h3 id="if-nginx-is-your-tls-edge" class="tsd-anchor-link">If nginx is your TLS edge<a href="#if-nginx-is-your-tls-edge" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>If nginx is the first TLS terminator, you have two realistic options:</p>
+<ol>
+<li>Use another edge or extension that computes JA4 and injects it before the
+request reaches your app.</li>
+<li>Run tls-devicer without JA4 and rely on the signals nginx can actually expose,
+such as header order and selected TLS metadata available from other headers.</li>
+</ol>
+<p>For plain nginx, do not expect native JA4, raw extension-order, or client HTTP/2
+SETTINGS extraction.</p>
 <h3 id="documentation" class="tsd-anchor-link">Documentation<a href="#documentation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p>This project uses typedoc and autodeploys via GitHub Pages. You can view the
 generated documentation <a href="https://gatewaycorporate.github.io/tls-devicer/">here</a>.</p>
@@ -44,4 +87,4 @@ generated documentation <a href="https://gatewaycorporate.github.io/tls-devicer/
 <p>tls-devicer uses polar.js for key verification. You can obtain a key for dual
 use of this library and ip-devicer by purchasing one
 <a href="https://buy.polar.sh/polar_cl_0Y4djPLDe5yLdNUDKdtPGlFW5TG2ZpFD5qkb93HsSQc">here</a></p>
-</div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#tls-devicer"><span>tls-<wbr/>devicer</span></a><ul><li><a href="#developed-by-gateway-corporate-solutions"><span>Developed by <wbr/>Gateway <wbr/>Corporate <wbr/>Solutions</span></a></li><li><a href="#usage"><span>Usage</span></a></li><li><a href="#recommended-setup-nginx"><span>Recommended <wbr/>Setup (<wbr/>Nginx)</span></a></li><li><ul><li><a href="#documentation"><span>Documentation</span></a></li></ul></li><li><a href="#installation"><span>Installation</span></a></li><li><a href="#license"><span>License</span></a></li><li><a href="#obtaining-a-key"><span>Obtaining a <wbr/>Key</span></a></li></ul></div></details></div><div class="site-menu"><nav class="tsd-navigation"><a href="modules.html">tls-devicer</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>
+</div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#tls-devicer"><span>tls-<wbr/>devicer</span></a><ul><li><a href="#developed-by-gateway-corporate-solutions"><span>Developed by <wbr/>Gateway <wbr/>Corporate <wbr/>Solutions</span></a></li><li><a href="#usage"><span>Usage</span></a></li><li><a href="#recommended-setup-nginx"><span>Recommended <wbr/>Setup (<wbr/>Nginx)</span></a></li><li><ul><li><a href="#cloudflare-to-nginx-to-app"><span>Cloudflare to nginx to app</span></a></li><li><a href="#if-nginx-is-your-tls-edge"><span>If nginx is your <wbr/>TLS edge</span></a></li><li><a href="#documentation"><span>Documentation</span></a></li></ul></li><li><a href="#installation"><span>Installation</span></a></li><li><a href="#license"><span>License</span></a></li><li><a href="#obtaining-a-key"><span>Obtaining a <wbr/>Key</span></a></li></ul></div></details></div><div class="site-menu"><nav class="tsd-navigation"><a href="modules.html">tls-devicer</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>

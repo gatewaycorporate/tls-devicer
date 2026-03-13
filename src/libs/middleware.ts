@@ -62,9 +62,9 @@ export function buildTlsProfile(
  *
  * ### Nginx example (injecting JA4)
  * ```nginx
- * proxy_set_header X-JA4               $ssl_client_hello_ja4;
- * proxy_set_header X-TLS-Extensions     $ssl_client_hello_extensions;
- * proxy_set_header X-HTTP2-Settings     $http2_settings;
+ * # Stock nginx cannot generate JA4 itself.
+ * # Forward a JA4 header from an upstream edge such as Cloudflare.
+ * proxy_set_header X-JA4 $http_cf_ja4;
  * ```
  */
 export function createTlsMiddleware() {
