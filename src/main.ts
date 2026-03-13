@@ -25,13 +25,8 @@ export type {
 } from './types.js';
 
 // ── Middleware ────────────────────────────────────────────────
-export {
-  createTlsMiddleware,
-  buildTlsProfile,
-  extractProfileFromSocket,
-  type NextFunction,
-  type TlsRequest,
-} from './libs/middleware.js';
+export { createTlsMiddleware, buildTlsProfile, extractProfileFromSocket } from './libs/middleware.js';
+export type { NextFunction, TlsRequest } from './libs/middleware.js';
 
 // ── Extractors ────────────────────────────────────────────────
 export {
@@ -60,23 +55,11 @@ export {
 } from './libs/scoring.js';
 
 // ── Storage ───────────────────────────────────────────────────
-export {
-  createTlsStorage,
-  serializeProfile,
-  type TlsStorage,
-} from './libs/adapters/inmemory.js';
-
-export {
-  createSqliteAdapter,
-  type AsyncTlsStorage,
-} from './libs/adapters/sqlite.js';
-
-export {
-  createPostgresAdapter,
-  type PgPoolLike,
-} from './libs/adapters/postgres.js';
-
-export {
-  createRedisAdapter,
-  type RedisLike,
-} from './libs/adapters/redis.js';
+export { createTlsStorage, serializeProfile } from './libs/adapters/inmemory.js';
+export type { TlsStorage } from './libs/adapters/inmemory.js';
+export { createSqliteAdapter } from './libs/adapters/sqlite.js';
+export type { AsyncTlsStorage } from './libs/adapters/sqlite.js';
+export { createPostgresAdapter } from './libs/adapters/postgres.js';
+export type { PgPoolLike } from './libs/adapters/postgres.js';
+export { createRedisAdapter } from './libs/adapters/redis.js';
+export type { RedisLike } from './libs/adapters/redis.js';
