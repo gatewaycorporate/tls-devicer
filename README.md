@@ -43,7 +43,7 @@ app.post("/identify", async (req, res) => {
 });
 ```
 
-## Recommended Setup (Nginx)
+## Recommended Setup (Nginx w/ CloudFlare)
 
 Stock nginx cannot generate JA4 or expose ClientHello extension lists through
 variables. That means the following variables do not exist in standard nginx:
