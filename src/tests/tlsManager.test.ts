@@ -35,15 +35,35 @@ const PROFILE_B: TlsProfile = {
   headerValues: { 'accept': '*/*' },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ProcFn = (payload: { result: IdentifyResult; context?: Record<string, unknown> }) => any;
+
 function makeDeviceManager(deviceId = 'device-1') {
+  const processors = new Map<string, ProcFn>();
   return {
-    identify: vi.fn(async (_data: unknown, _ctx?: Record<string, unknown>): Promise<IdentifyResult> => ({
-      deviceId,
-      confidence: 70,
-      isNewDevice: false,
-      matchConfidence: 70,
-      enrichmentInfo: emptyEnrichmentInfo,
-    })),
+    identify: vi.fn(async (_data: unknown, ctx?: Record<string, unknown>): Promise<IdentifyResult> => {
+      const base: IdentifyResult = {
+        deviceId,
+        confidence: 70,
+        isNewDevice: false,
+        matchConfidence: 70,
+        enrichmentInfo: emptyEnrichmentInfo,
+      };
+      const merged: Record<string, unknown> = { ...base };
+      for (const proc of processors.values()) {
+        try {
+          const outcome = await proc({ result: merged as IdentifyResult, context: ctx });
+          if (outcome?.result) Object.assign(merged, outcome.result);
+        } catch {
+          // processor errors are non-fatal
+        }
+      }
+      return merged as unknown as IdentifyResult;
+    }),
+    registerIdentifyPostProcessor: vi.fn((_name: string, fn: ProcFn) => {
+      processors.set(_name, fn);
+      return (): void => { processors.delete(_name); };
+    }),
   };
 }
 

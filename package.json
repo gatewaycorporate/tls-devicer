@@ -1,6 +1,6 @@
 {
   "name": "tls-devicer",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "type": "module",
   "description": "TLS Intelligence Middleware for the FP-Devicer Intelligence Suite",
   "main": "./dist/main.js",
@@ -46,7 +46,7 @@
     "vitest": "^3.2.4"
   },
   "peerDependencies": {
-    "devicer.js": "^1.5.10",
+    "devicer.js": "^1.6.0",
     "better-sqlite3": "^12.6.2",
     "ioredis": "^5.10.0",
     "pg": "^8.20.0"

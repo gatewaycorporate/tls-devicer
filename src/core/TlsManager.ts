@@ -20,9 +20,8 @@ import type {
   TlsSnapshot,
   TlsConsistency,
   TlsIdentifyContext,
-  IdentifyResult,
-  EnrichedIdentifyResult,
 } from '../types.js';
+import type { DeviceManagerPlugin, DeviceManagerLike } from 'devicer.js';
 
 const LICENSE_WARN =
   '[tls-devicer] No license key — running on the free tier ' +
@@ -34,32 +33,6 @@ const LICENSE_INVALID_WARN =
 const DEVICE_LIMIT_WARN =
   `[tls-devicer] Free-tier device limit reached (${FREE_TIER_MAX_DEVICES.toLocaleString()} devices). ` +
   'New device will not be tracked. Upgrade to Pro or Enterprise to remove this limit.';
-
-/**
- * Structural type for DeviceManager.identify so we avoid a hard dep on
- * devicer.js at runtime while keeping full type safety.
- */
-interface DeviceManagerLike {
-  identify(
-    data: unknown,
-    context?: Record<string, unknown>,
-  ): Promise<IdentifyResult>;
-  registerIdentifyPostProcessor?(
-    name: string,
-    processor: (payload: {
-      result: IdentifyResult;
-      context?: Record<string, unknown>;
-    }) => Promise<{
-      result?: Record<string, unknown>;
-      enrichmentInfo?: Record<string, unknown>;
-      logMeta?: Record<string, unknown>;
-    } | void> | {
-      result?: Record<string, unknown>;
-      enrichmentInfo?: Record<string, unknown>;
-      logMeta?: Record<string, unknown>;
-    } | void,
-  ): () => void;
-}
 
 /**
  * TlsManager — passive TLS intelligence for the FP-Devicer Suite.
@@ -81,7 +54,7 @@ interface DeviceManagerLike {
  * // result.tlsConsistency and result.tlsConfidenceBoost are now available
  * ```
  */
-export class TlsManager {
+export class TlsManager implements DeviceManagerPlugin {
   private static readonly DEVICE_MANAGER_PLUGIN_NAME = 'tls';
   private storage: TlsStorage;
   private readonly options: Required<
@@ -266,72 +239,20 @@ export class TlsManager {
    * Failures inside the TLS analysis are non-fatal — the original result
    * is returned as-is when analysis throws.
    */
-  registerWith(deviceManager: DeviceManagerLike): void {
-    if (typeof deviceManager.registerIdentifyPostProcessor === 'function') {
-      deviceManager.registerIdentifyPostProcessor(
-        TlsManager.DEVICE_MANAGER_PLUGIN_NAME,
-        ({ result, context }) => {
-          const ctx = (context ?? {}) as TlsIdentifyContext;
-          const profile = ctx.tlsProfile;
-          if (!profile) {
-            return;
-          }
+  registerWith(deviceManager: DeviceManagerLike): (() => void) | void {
+    return deviceManager.registerIdentifyPostProcessor?.(
+      TlsManager.DEVICE_MANAGER_PLUGIN_NAME,
+      ({ result, context }) => {
+        const ctx = (context ?? {}) as TlsIdentifyContext;
+        const profile = ctx.tlsProfile;
+        if (!profile) {
+          return;
+        }
 
-          const consistency = this.analyze(profile, result.deviceId);
-          const boost = computeConfidenceBoost(
-            consistency,
-            this.options.confidenceBoostWeight,
-          );
-          const boostedConfidence = Math.max(
-            0,
-            Math.min(100, result.confidence + boost),
-          );
-
-          return {
-            result: {
-              confidence: boostedConfidence,
-              matchConfidence: boostedConfidence,
-              tlsConsistency: consistency,
-              tlsConfidenceBoost: boost,
-            },
-            enrichmentInfo: {
-              consistencyScore: consistency.consistencyScore,
-              confidenceBoost: boost,
-              isNewDevice: consistency.isNewDevice,
-              factors: consistency.factors,
-            },
-            logMeta: {
-              consistencyScore: consistency.consistencyScore,
-              confidenceBoost: boost,
-              ja4Match: consistency.ja4Match,
-              ja3Match: consistency.ja3Match,
-              factors: consistency.factors,
-            },
-          };
-        },
-      );
-      return;
-    }
-
-    const original = deviceManager.identify.bind(deviceManager);
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
-
-    deviceManager.identify = async function patchedIdentify(
-      data: unknown,
-      context?: Record<string, unknown>,
-    ): Promise<EnrichedIdentifyResult> {
-      const result = await original(data, context);
-      const ctx = (context ?? {}) as TlsIdentifyContext;
-
-      const profile = ctx.tlsProfile;
-      if (!profile) return result;
-
-      try {
-        const consistency = self.analyze(profile, result.deviceId);
+        const consistency = this.analyze(profile, result.deviceId);
         const boost = computeConfidenceBoost(
           consistency,
-          self.options.confidenceBoostWeight,
+          this.options.confidenceBoostWeight,
         );
         const boostedConfidence = Math.max(
           0,
@@ -339,16 +260,27 @@ export class TlsManager {
         );
 
         return {
-          ...result,
-          confidence:          boostedConfidence,
-          matchConfidence:     boostedConfidence,
-          tlsConsistency:      consistency,
-          tlsConfidenceBoost:  boost,
+          result: {
+            confidence: boostedConfidence,
+            matchConfidence: boostedConfidence,
+            tlsConsistency: consistency,
+            tlsConfidenceBoost: boost,
+          },
+          enrichmentInfo: {
+            consistencyScore: consistency.consistencyScore,
+            confidenceBoost: boost,
+            isNewDevice: consistency.isNewDevice,
+            factors: consistency.factors,
+          },
+          logMeta: {
+            consistencyScore: consistency.consistencyScore,
+            confidenceBoost: boost,
+            ja4Match: consistency.ja4Match,
+            ja3Match: consistency.ja3Match,
+            factors: consistency.factors,
+          },
         };
-      } catch {
-        // TLS analysis failure is non-fatal
-        return result;
-      }
-    };
+      },
+    );
   }
 }
