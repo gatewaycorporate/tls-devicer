@@ -116,6 +116,13 @@ You can install ip-devicer and tls-devicer alongside FP-Devicer with
 npm install devicer.js ip-devicer tls-devicer
 ```
 
+You can also install the meta-package for the entire Devicer Intelligence Suite
+with
+
+```bash
+npm install @gatewaycorporate/devicer-intel
+```
+
 ## License
 
 Published under the **Business Source License 1.1 (BSL-1.1)**
