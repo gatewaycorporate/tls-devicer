@@ -176,66 +176,37 @@ export class TlsManager {
      * is returned as-is when analysis throws.
      */
     registerWith(deviceManager) {
-        if (typeof deviceManager.registerIdentifyPostProcessor === 'function') {
-            deviceManager.registerIdentifyPostProcessor(TlsManager.DEVICE_MANAGER_PLUGIN_NAME, ({ result, context }) => {
-                const ctx = (context ?? {});
-                const profile = ctx.tlsProfile;
-                if (!profile) {
-                    return;
-                }
-                const consistency = this.analyze(profile, result.deviceId);
-                const boost = computeConfidenceBoost(consistency, this.options.confidenceBoostWeight);
-                const boostedConfidence = Math.max(0, Math.min(100, result.confidence + boost));
-                return {
-                    result: {
-                        confidence: boostedConfidence,
-                        matchConfidence: boostedConfidence,
-                        tlsConsistency: consistency,
-                        tlsConfidenceBoost: boost,
-                    },
-                    enrichmentInfo: {
-                        consistencyScore: consistency.consistencyScore,
-                        confidenceBoost: boost,
-                        isNewDevice: consistency.isNewDevice,
-                        factors: consistency.factors,
-                    },
-                    logMeta: {
-                        consistencyScore: consistency.consistencyScore,
-                        confidenceBoost: boost,
-                        ja4Match: consistency.ja4Match,
-                        ja3Match: consistency.ja3Match,
-                        factors: consistency.factors,
-                    },
-                };
-            });
-            return;
-        }
-        const original = deviceManager.identify.bind(deviceManager);
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
-        deviceManager.identify = async function patchedIdentify(data, context) {
-            const result = await original(data, context);
+        return deviceManager.registerIdentifyPostProcessor?.(TlsManager.DEVICE_MANAGER_PLUGIN_NAME, ({ result, context }) => {
             const ctx = (context ?? {});
             const profile = ctx.tlsProfile;
-            if (!profile)
-                return result;
-            try {
-                const consistency = self.analyze(profile, result.deviceId);
-                const boost = computeConfidenceBoost(consistency, self.options.confidenceBoostWeight);
-                const boostedConfidence = Math.max(0, Math.min(100, result.confidence + boost));
-                return {
-                    ...result,
+            if (!profile) {
+                return;
+            }
+            const consistency = this.analyze(profile, result.deviceId);
+            const boost = computeConfidenceBoost(consistency, this.options.confidenceBoostWeight);
+            const boostedConfidence = Math.max(0, Math.min(100, result.confidence + boost));
+            return {
+                result: {
                     confidence: boostedConfidence,
                     matchConfidence: boostedConfidence,
                     tlsConsistency: consistency,
                     tlsConfidenceBoost: boost,
-                };
-            }
-            catch {
-                // TLS analysis failure is non-fatal
-                return result;
-            }
-        };
+                },
+                enrichmentInfo: {
+                    consistencyScore: consistency.consistencyScore,
+                    confidenceBoost: boost,
+                    isNewDevice: consistency.isNewDevice,
+                    factors: consistency.factors,
+                },
+                logMeta: {
+                    consistencyScore: consistency.consistencyScore,
+                    confidenceBoost: boost,
+                    ja4Match: consistency.ja4Match,
+                    ja3Match: consistency.ja3Match,
+                    factors: consistency.factors,
+                },
+            };
+        });
     }
 }
 //# sourceMappingURL=TlsManager.js.map

@@ -1,24 +1,6 @@
 import { type LicenseTier } from '../libs/license.js';
-import type { TlsManagerOptions, TlsProfile, TlsSnapshot, TlsConsistency, IdentifyResult } from '../types.js';
-/**
- * Structural type for DeviceManager.identify so we avoid a hard dep on
- * devicer.js at runtime while keeping full type safety.
- */
-interface DeviceManagerLike {
-    identify(data: unknown, context?: Record<string, unknown>): Promise<IdentifyResult>;
-    registerIdentifyPostProcessor?(name: string, processor: (payload: {
-        result: IdentifyResult;
-        context?: Record<string, unknown>;
-    }) => Promise<{
-        result?: Record<string, unknown>;
-        enrichmentInfo?: Record<string, unknown>;
-        logMeta?: Record<string, unknown>;
-    } | void> | {
-        result?: Record<string, unknown>;
-        enrichmentInfo?: Record<string, unknown>;
-        logMeta?: Record<string, unknown>;
-    } | void): () => void;
-}
+import type { TlsManagerOptions, TlsProfile, TlsSnapshot, TlsConsistency } from '../types.js';
+import type { DeviceManagerPlugin, DeviceManagerLike } from 'devicer.js';
 /**
  * TlsManager — passive TLS intelligence for the FP-Devicer Suite.
  *
@@ -39,7 +21,7 @@ interface DeviceManagerLike {
  * // result.tlsConsistency and result.tlsConfidenceBoost are now available
  * ```
  */
-export declare class TlsManager {
+export declare class TlsManager implements DeviceManagerPlugin {
     private static readonly DEVICE_MANAGER_PLUGIN_NAME;
     private storage;
     private readonly options;
@@ -101,7 +83,6 @@ export declare class TlsManager {
      * Failures inside the TLS analysis are non-fatal — the original result
      * is returned as-is when analysis throws.
      */
-    registerWith(deviceManager: DeviceManagerLike): void;
+    registerWith(deviceManager: DeviceManagerLike): (() => void) | void;
 }
-export {};
 //# sourceMappingURL=TlsManager.d.ts.map

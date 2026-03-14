@@ -34,6 +34,7 @@
   "author": "Samuel Roux",
   "license": "BSL-1.0",
   "dependencies": {
+    "devicer.js": "^1.6.0",
     "tlsh": "^1.0.8"
   },
   "devDependencies": {
@@ -46,7 +47,6 @@
     "vitest": "^3.2.4"
   },
   "peerDependencies": {
-    "devicer.js": "^1.6.0",
     "better-sqlite3": "^12.6.2",
     "ioredis": "^5.10.0",
     "pg": "^8.20.0"
