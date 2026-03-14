@@ -29,6 +29,7 @@ upstream edge.</p>
 <h3 id="cloudflare-to-nginx-to-app" class="tsd-anchor-link">Cloudflare to nginx to app<a href="#cloudflare-to-nginx-to-app" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p>tls-devicer accepts <code>cf-ja4</code> directly, but many applications prefer normalizing
 that to <code>x-ja4</code> before it reaches Node.</p>
+<p>This method requires a Cloudflare Enterprise subscription.</p>
 <pre><code class="nginx">server {
 	listen 443 ssl http2;
 	server_name example.com;

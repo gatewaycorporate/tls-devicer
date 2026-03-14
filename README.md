@@ -60,6 +60,8 @@ upstream edge.
 tls-devicer accepts `cf-ja4` directly, but many applications prefer normalizing
 that to `x-ja4` before it reaches Node.
 
+This method requires a Cloudflare Enterprise subscription.
+
 ```nginx
 server {
 	listen 443 ssl http2;
