@@ -30,6 +30,7 @@ export declare class TlsManager implements DeviceManagerPlugin {
     private initPromise;
     constructor(opts?: TlsManagerOptions);
     private readonly _licenseKey;
+    private readonly _customStorage;
     /** The active license tier. Resolves to `'free'` until {@link init} completes. */
     get tier(): LicenseTier;
     /**

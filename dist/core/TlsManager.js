@@ -61,10 +61,13 @@ export class TlsManager {
             maxHistoryPerDevice: maxHistory,
         };
         this._licenseKey = opts.licenseKey?.trim();
-        this.storage = createTlsStorage(maxHistory);
+        this._customStorage = Boolean(opts.storage);
+        this.storage = opts.storage ?? createTlsStorage(maxHistory);
     }
     // Store licenseKey separately so constructor can reference it
     _licenseKey;
+    // Tracks whether a custom storage backend was supplied by the caller
+    _customStorage;
     // ── Accessors ────────────────────────────────────────────
     /** The active license tier. Resolves to `'free'` until {@link init} completes. */
     get tier() {
@@ -92,7 +95,9 @@ export class TlsManager {
             console.warn(LICENSE_INVALID_WARN);
             // If we over-provisioned history, recreate storage with free-tier cap.
             if (this.options.maxHistoryPerDevice > FREE_TIER_MAX_HISTORY) {
-                this.storage = createTlsStorage(FREE_TIER_MAX_HISTORY);
+                if (!this._customStorage) {
+                    this.storage = createTlsStorage(FREE_TIER_MAX_HISTORY);
+                }
                 this.options.maxHistoryPerDevice =
                     FREE_TIER_MAX_HISTORY;
             }
