@@ -34,6 +34,15 @@ export interface TlsManagerOptions {
    * DeviceManager confidence signal. Range 0–1. Default: 0.15
    */
   confidenceBoostWeight?: number;
+  /**
+   * Custom storage backend. Defaults to the built-in in-memory store.
+   * Use `createSqliteAdapter`, `createPostgresAdapter`, or
+   * `createRedisAdapter` to supply a persistent backend.
+   *
+   * Async adapters (`AsyncTlsStorage`) must be initialised separately
+   * via their own `init()` before being passed here.
+   */
+  storage?: import('./libs/adapters/inmemory.js').TlsStorage;
 }
 
 // ── HTTP/2 SETTINGS ──────────────────────────────────────────
