@@ -20,6 +20,7 @@ export interface AsyncTlsStorage {
   getHistory(deviceId: string, limit?: number): Promise<TlsSnapshot[]>;
   getLatest(deviceId: string): Promise<TlsSnapshot | null>;
   clear(deviceId?: string): Promise<void>;
+	size(): Promise<number>;
 }
 
 interface BetterSqlite3Database {
@@ -126,6 +127,11 @@ export function createSqliteAdapter(dbPath: string): AsyncTlsStorage {
         db.exec(`DELETE FROM tls_snapshots`);
       }
     },
+
+		async size(): Promise<number> {
+			const row = db.prepare(`SELECT COUNT(DISTINCT device_id) as count FROM tls_snapshots`).get() as { count: number } | undefined;
+			return row ? row.count : 0;
+		}
   };
 }
 
