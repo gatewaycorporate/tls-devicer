@@ -18,6 +18,10 @@ export function createTlsStorage(maxPerDevice = 50) {
         return store.get(deviceId);
     }
     return {
+        init() {
+            // No async initialisation needed for in-memory store, but method is required by interface
+            return Promise.resolve();
+        },
         save(partial) {
             const snapshot = { ...partial, id: randomUUID() };
             const list = getList(snapshot.deviceId);

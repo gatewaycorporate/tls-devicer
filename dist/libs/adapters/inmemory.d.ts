@@ -1,5 +1,6 @@
 import type { TlsSnapshot, TlsProfile } from '../../types.js';
 export interface TlsStorage {
+    init(): Promise<void>;
     save(snapshot: Omit<TlsSnapshot, 'id'>): TlsSnapshot;
     getHistory(deviceId: string, limit?: number): TlsSnapshot[];
     getLatest(deviceId: string): TlsSnapshot | null;
