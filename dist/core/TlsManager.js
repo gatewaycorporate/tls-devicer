@@ -115,12 +115,12 @@ export class TlsManager {
      * @param profile  - TLS signals collected for the current request.
      * @param deviceId - The resolved device identifier from DeviceManager.
      */
-    async analyze(profile, deviceId) {
+    analyze(profile, deviceId) {
         // ── Free-tier device cap ───────────────────────────────────
-        const isKnown = (await this.storage.getLatest(deviceId)) !== null;
+        const isKnown = this.storage.getLatest(deviceId) !== null;
         if (!isKnown &&
             this.licenseInfo.tier === 'free' &&
-            (await this.storage.size()) >= FREE_TIER_MAX_DEVICES) {
+            this.storage.size() >= FREE_TIER_MAX_DEVICES) {
             console.warn(DEVICE_LIMIT_WARN);
             return {
                 consistencyScore: 0,
@@ -136,10 +136,10 @@ export class TlsManager {
                 factors: ['device-limit-exceeded'],
             };
         }
-        const history = await this.storage.getHistory(deviceId);
+        const history = this.storage.getHistory(deviceId);
         const consistency = computeConsistencyScore(profile, history, this.options.enableJa4, this.options.enableJa3, this.options.enableHttp2, this.options.enableHeaderConsistency);
         // Persist snapshot after scoring (history excludes current request)
-        await this.storage.save({ deviceId, timestamp: new Date(), profile });
+        this.storage.save({ deviceId, timestamp: new Date(), profile });
         return consistency;
     }
     /**
@@ -148,20 +148,20 @@ export class TlsManager {
      * @param deviceId - Device identifier.
      * @param limit    - Max entries to return. Returns all when omitted.
      */
-    async getHistory(deviceId, limit) {
+    getHistory(deviceId, limit) {
         return this.storage.getHistory(deviceId, limit);
     }
     /**
      * Return the most-recent TLS snapshot for a device, or `null` if none.
      */
-    async getLatest(deviceId) {
+    getLatest(deviceId) {
         return this.storage.getLatest(deviceId);
     }
     /**
      * Clear stored snapshots — all devices or a single device.
      */
-    async clear(deviceId) {
-        await this.storage.clear(deviceId);
+    clear(deviceId) {
+        this.storage.clear(deviceId);
     }
     // ── DeviceManager integration ──────────────────────────────
     /**
@@ -181,13 +181,13 @@ export class TlsManager {
      * is returned as-is when analysis throws.
      */
     registerWith(deviceManager) {
-        return deviceManager.registerIdentifyPostProcessor?.(TlsManager.DEVICE_MANAGER_PLUGIN_NAME, async ({ result, context }) => {
+        return deviceManager.registerIdentifyPostProcessor?.(TlsManager.DEVICE_MANAGER_PLUGIN_NAME, ({ result, context }) => {
             const ctx = (context ?? {});
             const profile = ctx.tlsProfile;
             if (!profile) {
                 return;
             }
-            const consistency = await this.analyze(profile, result.deviceId);
+            const consistency = this.analyze(profile, result.deviceId);
             const boost = computeConfidenceBoost(consistency, this.options.confidenceBoostWeight);
             const boostedConfidence = Math.max(0, Math.min(100, result.confidence + boost));
             return {
