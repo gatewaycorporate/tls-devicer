@@ -52,22 +52,22 @@ export declare class TlsManager implements DeviceManagerPlugin {
      * @param profile  - TLS signals collected for the current request.
      * @param deviceId - The resolved device identifier from DeviceManager.
      */
-    analyze(profile: TlsProfile, deviceId: string): TlsConsistency;
+    analyze(profile: TlsProfile, deviceId: string): Promise<TlsConsistency>;
     /**
      * Return the full TLS snapshot history for a device.
      *
      * @param deviceId - Device identifier.
      * @param limit    - Max entries to return. Returns all when omitted.
      */
-    getHistory(deviceId: string, limit?: number): TlsSnapshot[];
+    getHistory(deviceId: string, limit?: number): Promise<TlsSnapshot[]>;
     /**
      * Return the most-recent TLS snapshot for a device, or `null` if none.
      */
-    getLatest(deviceId: string): TlsSnapshot | null;
+    getLatest(deviceId: string): Promise<TlsSnapshot | null>;
     /**
      * Clear stored snapshots — all devices or a single device.
      */
-    clear(deviceId?: string): void;
+    clear(deviceId?: string): Promise<void>;
     /**
      * Patch `deviceManager.identify()` to automatically analyse TLS signals
      * on every call and attach `tlsConsistency` and `tlsConfidenceBoost` to
