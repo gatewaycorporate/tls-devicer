@@ -79,6 +79,10 @@ export function createSqliteAdapter(dbPath) {
                 db.exec(`DELETE FROM tls_snapshots`);
             }
         },
+        async size() {
+            const row = db.prepare(`SELECT COUNT(DISTINCT device_id) as count FROM tls_snapshots`).get();
+            return row ? row.count : 0;
+        }
     };
 }
 function rowToSnapshot(row) {

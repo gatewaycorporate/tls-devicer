@@ -10,6 +10,7 @@ export interface AsyncTlsStorage {
     getHistory(deviceId: string, limit?: number): Promise<TlsSnapshot[]>;
     getLatest(deviceId: string): Promise<TlsSnapshot | null>;
     clear(deviceId?: string): Promise<void>;
+    size(): Promise<number>;
 }
 /**
  * Create a {@link AsyncTlsStorage} backed by a SQLite file via

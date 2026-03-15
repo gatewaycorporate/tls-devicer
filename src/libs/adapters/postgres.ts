@@ -98,6 +98,12 @@ export function createPostgresAdapter(pool: PgPoolLike): AsyncTlsStorage {
         await pool.query(`DELETE FROM tls_snapshots`);
       }
     },
+
+		async size(): Promise<number> {
+			const { rows } = await pool.query(`SELECT COUNT(DISTINCT device_id) as count FROM tls_snapshots`);
+			const row = rows[0] as { count: number } | undefined;
+			return row ? row.count : 0;
+		}
   };
 }
 

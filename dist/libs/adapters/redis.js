@@ -84,6 +84,10 @@ export function createRedisAdapter(redis) {
                 await Promise.all(keys.map((k) => redis.del(k)));
             }
         },
+        async size() {
+            const keys = await redis.keys('tls:device:*');
+            return keys.length;
+        }
     };
 }
 //# sourceMappingURL=redis.js.map

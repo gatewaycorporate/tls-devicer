@@ -103,5 +103,10 @@ export function createRedisAdapter(redis: RedisLike): AsyncTlsStorage {
         await Promise.all(keys.map((k) => redis.del(k)));
       }
     },
+
+		async size(): Promise<number> {
+			const keys = await redis.keys('tls:device:*');
+			return keys.length;
+		}
   };
 }
