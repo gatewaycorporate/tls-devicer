@@ -2,6 +2,8 @@
 //  tls-devicer — shared types
 // ────────────────────────────────────────────────────────────
 
+import { AsyncTlsStorage, TlsStorage } from "./main.js";
+
 // ── Constructor options ──────────────────────────────────────
 
 export interface TlsManagerOptions {
@@ -42,7 +44,7 @@ export interface TlsManagerOptions {
    * Async adapters (`AsyncTlsStorage`) must be initialised separately
    * via their own `init()` before being passed here.
    */
-  storage?: import('./libs/adapters/inmemory.js').TlsStorage;
+  storage?: TlsStorage | AsyncTlsStorage;
 }
 
 // ── HTTP/2 SETTINGS ──────────────────────────────────────────
