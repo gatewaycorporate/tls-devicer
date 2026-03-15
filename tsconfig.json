@@ -13,6 +13,10 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/tests/**/*"]
+  "include": ["src"],
+  "exclude": [
+		"node_modules", 
+		"dist", 
+		"src/tests"
+	]
 }
