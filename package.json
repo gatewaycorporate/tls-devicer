@@ -1,6 +1,6 @@
 {
   "name": "tls-devicer",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "TLS Intelligence Middleware for the FP-Devicer Intelligence Suite",
   "main": "./dist/main.js",
