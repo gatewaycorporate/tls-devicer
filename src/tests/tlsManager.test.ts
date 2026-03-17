@@ -144,51 +144,51 @@ describe('TlsManager.registerWith', () => {
 // ── TlsManager history ────────────────────────────────────────
 
 describe('TlsManager history', () => {
-  it('stores snapshots and caps at maxHistoryPerDevice', () => {
+  it('stores snapshots and caps at maxHistoryPerDevice', async () => {
     const tlsManager = new TlsManager({ licenseKey: 'test-key', maxHistoryPerDevice: 3 });
 
-    tlsManager.analyze(PROFILE_A, 'dev-1');
-    tlsManager.analyze(PROFILE_A, 'dev-1');
-    tlsManager.analyze(PROFILE_A, 'dev-1');
-    tlsManager.analyze(PROFILE_A, 'dev-1'); // 4th → should drop oldest
+    await tlsManager.analyze(PROFILE_A, 'dev-1');
+    await tlsManager.analyze(PROFILE_A, 'dev-1');
+    await tlsManager.analyze(PROFILE_A, 'dev-1');
+    await tlsManager.analyze(PROFILE_A, 'dev-1'); // 4th → should drop oldest
 
-    expect(tlsManager.getHistory('dev-1').length).toBe(3);
+    expect((await tlsManager.getHistory('dev-1')).length).toBe(3);
   });
 
-  it('returns null for unknown device', () => {
+  it('returns null for unknown device', async () => {
     const tlsManager = new TlsManager({ licenseKey: 'test-key' });
-    expect(tlsManager.getLatest('unknown-device')).toBeNull();
+    expect(await tlsManager.getLatest('unknown-device')).toBeNull();
   });
 
-  it('clears history for specific device', () => {
+  it('clears history for specific device', async () => {
     const tlsManager = new TlsManager({ licenseKey: 'test-key' });
-    tlsManager.analyze(PROFILE_A, 'dev-a');
-    tlsManager.analyze(PROFILE_A, 'dev-b');
-    tlsManager.clear('dev-a');
-    expect(tlsManager.getHistory('dev-a').length).toBe(0);
-    expect(tlsManager.getHistory('dev-b').length).toBe(1);
+    await tlsManager.analyze(PROFILE_A, 'dev-a');
+    await tlsManager.analyze(PROFILE_A, 'dev-b');
+    await tlsManager.clear('dev-a');
+    expect((await tlsManager.getHistory('dev-a')).length).toBe(0);
+    expect((await tlsManager.getHistory('dev-b')).length).toBe(1);
   });
 
-  it('clears all history', () => {
+  it('clears all history', async () => {
     const tlsManager = new TlsManager({ licenseKey: 'test-key' });
-    tlsManager.analyze(PROFILE_A, 'dev-a');
-    tlsManager.analyze(PROFILE_A, 'dev-b');
-    tlsManager.clear();
-    expect(tlsManager.getHistory('dev-a').length).toBe(0);
-    expect(tlsManager.getHistory('dev-b').length).toBe(0);
+    await tlsManager.analyze(PROFILE_A, 'dev-a');
+    await tlsManager.analyze(PROFILE_A, 'dev-b');
+    await tlsManager.clear();
+    expect((await tlsManager.getHistory('dev-a')).length).toBe(0);
+    expect((await tlsManager.getHistory('dev-b')).length).toBe(0);
   });
 });
 
 // ── Free tier limits ──────────────────────────────────────────
 
 describe('TlsManager free tier', () => {
-  it('caps history at 10 without license key', () => {
+  it('caps history at 10 without license key', async () => {
     const tlsManager = new TlsManager(); // no key
 
     for (let i = 0; i < 15; i++) {
-      tlsManager.analyze(PROFILE_A, 'free-dev');
+      await tlsManager.analyze(PROFILE_A, 'free-dev');
     }
-    expect(tlsManager.getHistory('free-dev').length).toBe(10);
+    expect((await tlsManager.getHistory('free-dev')).length).toBe(10);
   });
 });
 
@@ -213,7 +213,7 @@ describe('TlsManager error resilience', () => {
     expect(result.tlsConfidenceBoost).toBeUndefined();
   });
 
-  it('registers a DeviceManager post-processor when the hook API is available', () => {
+  it('registers a DeviceManager post-processor when the hook API is available', async () => {
     const tlsManager = new TlsManager({ licenseKey: 'test-key' });
     let registeredProcessor:
       | ((payload: { result: IdentifyResult; context?: Record<string, unknown> }) => { result?: Record<string, unknown>; enrichmentInfo?: Record<string, unknown>; logMeta?: Record<string, unknown> } | void)
@@ -236,7 +236,7 @@ describe('TlsManager error resilience', () => {
 
     tlsManager.registerWith(deviceManager);
 
-    const outcome = registeredProcessor!({
+    const outcome = await registeredProcessor!({
       result: {
         deviceId: 'device-hook',
         confidence: 70,

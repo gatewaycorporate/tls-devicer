@@ -231,9 +231,9 @@ describe('TlsManager history downgrade', () => {
     await mgr.init();
 
     for (let i = 0; i < 12; i++) {
-      mgr.analyze(PROFILE, 'dev-downgrade');
+      await mgr.analyze(PROFILE, 'dev-downgrade');
     }
-    expect(mgr.getHistory('dev-downgrade').length).toBe(FREE_TIER_MAX_HISTORY);
+    expect((await mgr.getHistory('dev-downgrade')).length).toBe(FREE_TIER_MAX_HISTORY);
   });
 
   it('retains full history when key is accepted (pro)', async () => {
@@ -242,9 +242,9 @@ describe('TlsManager history downgrade', () => {
     await mgr.init();
 
     for (let i = 0; i < 15; i++) {
-      mgr.analyze(PROFILE, 'dev-pro');
+      await mgr.analyze(PROFILE, 'dev-pro');
     }
-    expect(mgr.getHistory('dev-pro').length).toBe(15);
+    expect((await mgr.getHistory('dev-pro')).length).toBe(15);
   });
 
   it('retains full history when key is accepted (enterprise)', async () => {
@@ -253,9 +253,9 @@ describe('TlsManager history downgrade', () => {
     await mgr.init();
 
     for (let i = 0; i < 15; i++) {
-      mgr.analyze(PROFILE, 'dev-ent');
+      await mgr.analyze(PROFILE, 'dev-ent');
     }
-    expect(mgr.getHistory('dev-ent').length).toBe(15);
+    expect((await mgr.getHistory('dev-ent')).length).toBe(15);
   });
 });
 
@@ -264,29 +264,29 @@ describe('TlsManager history downgrade', () => {
 describe('TlsManager free-tier device limit', () => {
   afterEach(() => { vi.unstubAllGlobals(); });
 
-  it('allows analysis for a known device even when device cap is reached', () => {
+  it('allows analysis for a known device even when device cap is reached', async () => {
     const mgr = new TlsManager(); // free tier
 
     // Seed one snapshot for the device
-    mgr.analyze(PROFILE, 'known-dev');
+    await mgr.analyze(PROFILE, 'known-dev');
 
     // Fake storage reporting FREE_TIER_MAX_DEVICES unique devices
     const storage = (mgr as unknown as { storage: { size: () => number } }).storage;
     vi.spyOn(storage, 'size').mockReturnValue(FREE_TIER_MAX_DEVICES);
 
-    const result = mgr.analyze(PROFILE, 'known-dev');
+    const result = await mgr.analyze(PROFILE, 'known-dev');
     expect(result.isNewDevice).toBe(false);
     expect(result.factors).not.toContain('device-limit-exceeded');
   });
 
-  it('blocks analysis for a new device when cap is reached and returns zero signal', () => {
+  it('blocks analysis for a new device when cap is reached and returns zero signal', async () => {
     const mgr = new TlsManager(); // free tier
 
     // Fake storage reporting FREE_TIER_MAX_DEVICES
     const storage = (mgr as unknown as { storage: { size: () => number } }).storage;
     vi.spyOn(storage, 'size').mockReturnValue(FREE_TIER_MAX_DEVICES);
 
-    const result = mgr.analyze(PROFILE, 'brand-new-dev');
+    const result = await mgr.analyze(PROFILE, 'brand-new-dev');
     expect(result.consistencyScore).toBe(0);
     expect(result.isNewDevice).toBe(true);
     expect(result.factors).toContain('device-limit-exceeded');
@@ -301,7 +301,7 @@ describe('TlsManager free-tier device limit', () => {
     const storage = (mgr as unknown as { storage: { size: () => number } }).storage;
     vi.spyOn(storage, 'size').mockReturnValue(FREE_TIER_MAX_DEVICES * 10);
 
-    const result = mgr.analyze(PROFILE, 'unlimited-dev');
+    const result = await mgr.analyze(PROFILE, 'unlimited-dev');
     expect(result.factors).not.toContain('device-limit-exceeded');
     expect(result.isNewDevice).toBe(true);
   });
@@ -314,7 +314,7 @@ describe('TlsManager free-tier device limit', () => {
     const storage = (mgr as unknown as { storage: { size: () => number } }).storage;
     vi.spyOn(storage, 'size').mockReturnValue(FREE_TIER_MAX_DEVICES * 100);
 
-    const result = mgr.analyze(PROFILE, 'unlimited-ent-dev');
+    const result = await mgr.analyze(PROFILE, 'unlimited-ent-dev');
     expect(result.factors).not.toContain('device-limit-exceeded');
   });
 });

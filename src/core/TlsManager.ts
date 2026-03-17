@@ -22,6 +22,7 @@ import type {
   TlsIdentifyContext,
 } from '../types.js';
 import type { DeviceManagerPlugin, DeviceManagerLike } from 'devicer.js';
+import { AsyncTlsStorage } from '../main.js';
 
 const LICENSE_WARN =
   '[tls-devicer] No license key — running on the free tier ' +
@@ -56,7 +57,7 @@ const DEVICE_LIMIT_WARN =
  */
 export class TlsManager implements DeviceManagerPlugin {
   private static readonly DEVICE_MANAGER_PLUGIN_NAME = 'tls';
-  private storage: TlsStorage;
+  private storage: TlsStorage | AsyncTlsStorage;
   private readonly options: Required<
     Pick<
       TlsManagerOptions,
@@ -100,7 +101,7 @@ export class TlsManager implements DeviceManagerPlugin {
 
     this._licenseKey = opts.licenseKey?.trim();
     this._customStorage = Boolean(opts.storage);
-    this.storage = (opts.storage as TlsStorage) ?? createTlsStorage(maxHistory);
+    this.storage = opts.storage ?? createTlsStorage(maxHistory);
   }
 
   // Store licenseKey separately so constructor can reference it
@@ -161,13 +162,13 @@ export class TlsManager implements DeviceManagerPlugin {
    * @param profile  - TLS signals collected for the current request.
    * @param deviceId - The resolved device identifier from DeviceManager.
    */
-  analyze(profile: TlsProfile, deviceId: string): TlsConsistency {
+  async analyze(profile: TlsProfile, deviceId: string): Promise<TlsConsistency> {
     // ── Free-tier device cap ───────────────────────────────────
-    const isKnown = this.storage.getLatest(deviceId) !== null;
+    const isKnown = (await this.storage.getLatest(deviceId)) !== null;
     if (
       !isKnown &&
       this.licenseInfo.tier === 'free' &&
-      this.storage.size() >= FREE_TIER_MAX_DEVICES
+      (await this.storage.size()) >= FREE_TIER_MAX_DEVICES
     ) {
       console.warn(DEVICE_LIMIT_WARN);
       return {
@@ -185,7 +186,7 @@ export class TlsManager implements DeviceManagerPlugin {
       };
     }
 
-    const history = this.storage.getHistory(deviceId);
+    const history = await this.storage.getHistory(deviceId);
 
     const consistency = computeConsistencyScore(
       profile,
@@ -197,7 +198,7 @@ export class TlsManager implements DeviceManagerPlugin {
     );
 
     // Persist snapshot after scoring (history excludes current request)
-    this.storage.save({ deviceId, timestamp: new Date(), profile });
+    await this.storage.save({ deviceId, timestamp: new Date(), profile });
 
     return consistency;
   }
@@ -208,22 +209,22 @@ export class TlsManager implements DeviceManagerPlugin {
    * @param deviceId - Device identifier.
    * @param limit    - Max entries to return. Returns all when omitted.
    */
-  getHistory(deviceId: string, limit?: number): TlsSnapshot[] {
-    return this.storage.getHistory(deviceId, limit);
+  getHistory(deviceId: string, limit?: number): Promise<TlsSnapshot[]> {
+    return Promise.resolve(this.storage.getHistory(deviceId, limit));
   }
 
   /**
    * Return the most-recent TLS snapshot for a device, or `null` if none.
    */
-  getLatest(deviceId: string): TlsSnapshot | null {
-    return this.storage.getLatest(deviceId);
+  getLatest(deviceId: string): Promise<TlsSnapshot | null> {
+    return Promise.resolve(this.storage.getLatest(deviceId));
   }
 
   /**
    * Clear stored snapshots — all devices or a single device.
    */
-  clear(deviceId?: string): void {
-    this.storage.clear(deviceId);
+  clear(deviceId?: string): Promise<void> {
+    return Promise.resolve(this.storage.clear(deviceId));
   }
 
   // ── DeviceManager integration ──────────────────────────────
@@ -247,14 +248,14 @@ export class TlsManager implements DeviceManagerPlugin {
   registerWith(deviceManager: DeviceManagerLike): (() => void) | void {
     return deviceManager.registerIdentifyPostProcessor?.(
       TlsManager.DEVICE_MANAGER_PLUGIN_NAME,
-      ({ result, context }) => {
+      async ({ result, context }) => {
         const ctx = (context ?? {}) as TlsIdentifyContext;
         const profile = ctx.tlsProfile;
         if (!profile) {
           return;
         }
 
-        const consistency = this.analyze(profile, result.deviceId);
+        const consistency = await this.analyze(profile, result.deviceId);
         const boost = computeConfidenceBoost(
           consistency,
           this.options.confidenceBoostWeight,
