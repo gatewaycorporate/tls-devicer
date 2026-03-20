@@ -30,7 +30,7 @@ const tlsManager = new TlsManager({
 	licenseKey: process.env.DEVICER_LICENSE_KEY,
 });
 
-tlsManager.registerWith(deviceManager);
+deviceManager.use(tlsManager);
 
 app.post("/identify", async (req, res) => {
 	const result = await deviceManager.identify(req.body, {
