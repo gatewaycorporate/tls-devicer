@@ -1,7 +1,7 @@
 # tls-devicer
 
 **TLS Intelligence Middleware** for the FP-Devicer Intelligence Suite.
-Developed by [Gateway Corporate Solutions](https://gatewaycorporate.io).
+Developed by [Gateway Corporate Solutions](https://gatewaycorporate.org).
 
 ---
 
