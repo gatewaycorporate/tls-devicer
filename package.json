@@ -1,6 +1,6 @@
 {
   "name": "tls-devicer",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "type": "module",
   "description": "TLS Intelligence Middleware for the FP-Devicer Intelligence Suite",
   "main": "./dist/main.js",
@@ -34,7 +34,7 @@
   "author": "Samuel Roux",
   "license": "BSL-1.0",
   "dependencies": {
-    "devicer.js": "^2.0.1",
+    "devicer.js": "^2.0.2",
     "tlsh": "^1.0.8"
   },
   "devDependencies": {
