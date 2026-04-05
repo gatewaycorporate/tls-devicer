@@ -1,22 +1,107 @@
 <!DOCTYPE html><html class="default" lang="en" data-base="./"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>tls-devicer</title><meta name="description" content="Documentation for tls-devicer"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script><script async src="assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><a href="index.html" class="title">tls-devicer</a><div id="tsd-toolbar-links"></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/><ul role="listbox" id="tsd-search-results"></ul><div id="tsd-search-status" aria-live="polite" aria-atomic="true"><div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-menu"></use></svg></a></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><h1>tls-devicer</h1></div><div class="tsd-panel tsd-typography"><h1 id="tls-devicer" class="tsd-anchor-link">tls-devicer<a href="#tls-devicer" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1>
-<h2 id="developed-by-gateway-corporate-solutions" class="tsd-anchor-link">Developed by Gateway Corporate Solutions<a href="#developed-by-gateway-corporate-solutions" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
-<p><strong>TLS Intelligence Middleware</strong> for the FP-Devicer Intelligence Suite.</p>
-<p>Passively collect and match JA4 fingerprints, TLS extensions, cipher order,
-HTTP/2 settings, and header consistency to strengthen device identity.</p>
-<p>Part of the <a href="https://github.com/gatewaycorporate/fp-devicer">FP-Devicer</a> family
-— invisible to clients and extremely hard to spoof.</p>
-<p>Important: tls-devicer does not derive JA4 itself. It consumes JA4 or related
+<p><strong>TLS Intelligence Middleware</strong> for the FP-Devicer Intelligence Suite.
+Developed by <a href="https://gatewaycorporate.org">Gateway Corporate Solutions</a>.</p>
+<hr>
+<h2 id="overview" class="tsd-anchor-link">Overview<a href="#overview" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p><code>tls-devicer</code> passively collects and compares JA4 fingerprints, JA3/JA3S,
+extension order, cipher order, HTTP/2 settings, and header consistency to
+strengthen device identity matching.</p>
+<p>Important: <code>tls-devicer</code> does not derive JA4 itself. It consumes JA4 or related
 TLS signals from headers injected by an upstream edge such as Cloudflare,
 HAProxy with custom logic, Envoy filters, or another TLS terminator that can
 compute and forward them.</p>
-<h2 id="usage" class="tsd-anchor-link">Usage<a href="#usage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
-<p>tls-devicer is designed to integrate seamlessly with FP-Devicer by use of the
-<code>registerWith</code> helper. This works best when your reverse proxy injects JA4 and
-TLS headers.</p>
-<pre><code class="typescript"><span class="hl-0">import</span><span class="hl-1"> { </span><span class="hl-2">createInMemoryAdapter</span><span class="hl-1">, </span><span class="hl-2">DeviceManager</span><span class="hl-1"> } </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&quot;devicer.js&quot;</span><span class="hl-1">;</span><br/><span class="hl-0">import</span><span class="hl-1"> { </span><span class="hl-2">TlsManager</span><span class="hl-1"> } </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&quot;tls-devicer&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">deviceManager</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">DeviceManager</span><span class="hl-1">(</span><span class="hl-6">createInMemoryAdapter</span><span class="hl-1">());</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">tlsManager</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">TlsManager</span><span class="hl-1">({</span><br/><span class="hl-1">	</span><span class="hl-2">licenseKey:</span><span class="hl-1"> </span><span class="hl-2">process</span><span class="hl-1">.</span><span class="hl-2">env</span><span class="hl-1">.</span><span class="hl-5">DEVICER_LICENSE_KEY</span><span class="hl-1">,</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-2">tlsManager</span><span class="hl-1">.</span><span class="hl-6">registerWith</span><span class="hl-1">(</span><span class="hl-2">deviceManager</span><span class="hl-1">);</span><br/><br/><span class="hl-2">app</span><span class="hl-1">.</span><span class="hl-6">post</span><span class="hl-1">(</span><span class="hl-3">&quot;/identify&quot;</span><span class="hl-1">, </span><span class="hl-4">async</span><span class="hl-1"> (</span><span class="hl-2">req</span><span class="hl-1">, </span><span class="hl-2">res</span><span class="hl-1">) </span><span class="hl-4">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">	</span><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">result</span><span class="hl-1"> = </span><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-2">deviceManager</span><span class="hl-1">.</span><span class="hl-6">identify</span><span class="hl-1">(</span><span class="hl-2">req</span><span class="hl-1">.</span><span class="hl-2">body</span><span class="hl-1">, {</span><br/><span class="hl-1">		</span><span class="hl-2">tlsProfile:</span><span class="hl-1"> {</span><br/><span class="hl-1">			</span><span class="hl-2">ja4:</span><span class="hl-1"> </span><span class="hl-2">req</span><span class="hl-1">.</span><span class="hl-2">headers</span><span class="hl-1">[</span><span class="hl-3">&quot;x-ja4&quot;</span><span class="hl-1">],</span><br/><span class="hl-1">			</span><span class="hl-2">extensions:</span><span class="hl-1"> </span><span class="hl-2">req</span><span class="hl-1">.</span><span class="hl-2">headers</span><span class="hl-1">[</span><span class="hl-3">&quot;x-tls-extensions&quot;</span><span class="hl-1">]?.</span><span class="hl-6">split</span><span class="hl-1">(</span><span class="hl-3">&quot;,&quot;</span><span class="hl-1">),</span><br/><span class="hl-1">			</span><span class="hl-2">http2Settings:</span><span class="hl-1"> </span><span class="hl-2">req</span><span class="hl-1">.</span><span class="hl-2">headers</span><span class="hl-1">[</span><span class="hl-3">&quot;x-http2-settings&quot;</span><span class="hl-1">],</span><br/><span class="hl-1">		},</span><br/><span class="hl-1">	});</span><br/><span class="hl-1">});</span>
+<h3 id="what-it-does" class="tsd-anchor-link">What it does<a href="#what-it-does" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>TLS profile ingestion</strong></td>
+<td>Accepts JA4, JA3, JA3S, cipher suites, extension order, HTTP/2 settings, and ordered headers from middleware or request context.</td>
+</tr>
+<tr>
+<td><strong>Protocol consistency</strong></td>
+<td>Compares the current TLS profile against historical snapshots for the same device.</td>
+</tr>
+<tr>
+<td><strong>Signal scoring</strong></td>
+<td>Computes similarity across JA4, JA3, cipher suites, extension sets, HTTP/2 settings, header order, and stable header values.</td>
+</tr>
+<tr>
+<td><strong>Anomaly detection</strong></td>
+<td>Emits human-readable factor keys when profiles drift in suspicious ways.</td>
+</tr>
+<tr>
+<td><strong>Confidence adjustment</strong></td>
+<td>Applies a positive or negative confidence delta back into the <code>DeviceManager</code> result.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="installation" class="tsd-anchor-link">Installation<a href="#installation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Install <code>tls-devicer</code> as a standalone package:</p>
+<pre><code class="bash"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-2">tls-devicer</span>
 </code><button type="button">Copy</button></pre>
 
-<h2 id="recommended-setup-nginx-w-cloudflare" class="tsd-anchor-link">Recommended Setup (Nginx w/ CloudFlare)<a href="#recommended-setup-nginx-w-cloudflare" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Install the bundled network-intelligence pair with FP-Devicer:</p>
+<pre><code class="bash"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-2">devicer.js</span><span class="hl-1"> </span><span class="hl-2">ip-devicer</span><span class="hl-1"> </span><span class="hl-2">tls-devicer</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Optional peer dependencies for persistent storage:</p>
+<pre><code class="bash"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-2">better-sqlite3</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-2">ioredis</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-2">pg</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Install the full Devicer Intelligence Suite meta-package:</p>
+<pre><code class="bash"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-2">@gatewaycorporate/devicer-intel</span>
+</code><button type="button">Copy</button></pre>
+
+<hr>
+<h2 id="quick-start" class="tsd-anchor-link">Quick start<a href="#quick-start" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="typescript"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">createInMemoryAdapter</span><span class="hl-1">, </span><span class="hl-4">DeviceManager</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&quot;devicer.js&quot;</span><span class="hl-1">;</span><br/><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">TlsManager</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&quot;tls-devicer&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">deviceManager</span><span class="hl-1"> = </span><span class="hl-5">new</span><span class="hl-1"> </span><span class="hl-0">DeviceManager</span><span class="hl-1">(</span><span class="hl-0">createInMemoryAdapter</span><span class="hl-1">());</span><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">tlsManager</span><span class="hl-1"> = </span><span class="hl-5">new</span><span class="hl-1"> </span><span class="hl-0">TlsManager</span><span class="hl-1">({</span><br/><span class="hl-1">	</span><span class="hl-4">licenseKey:</span><span class="hl-1"> </span><span class="hl-4">process</span><span class="hl-1">.</span><span class="hl-4">env</span><span class="hl-1">.</span><span class="hl-6">DEVICER_LICENSE_KEY</span><span class="hl-1">,</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-4">deviceManager</span><span class="hl-1">.</span><span class="hl-0">use</span><span class="hl-1">(</span><span class="hl-4">tlsManager</span><span class="hl-1">);</span><br/><br/><span class="hl-4">app</span><span class="hl-1">.</span><span class="hl-0">post</span><span class="hl-1">(</span><span class="hl-2">&quot;/identify&quot;</span><span class="hl-1">, </span><span class="hl-5">async</span><span class="hl-1"> (</span><span class="hl-4">req</span><span class="hl-1">, </span><span class="hl-4">res</span><span class="hl-1">) </span><span class="hl-5">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">	</span><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">result</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">deviceManager</span><span class="hl-1">.</span><span class="hl-0">identify</span><span class="hl-1">(</span><span class="hl-4">req</span><span class="hl-1">.</span><span class="hl-4">body</span><span class="hl-1">.</span><span class="hl-4">fpPayload</span><span class="hl-1">, {</span><br/><span class="hl-1">		</span><span class="hl-4">tlsProfile:</span><span class="hl-1"> {</span><br/><span class="hl-1">			</span><span class="hl-4">ja4:</span><span class="hl-1"> </span><span class="hl-4">req</span><span class="hl-1">.</span><span class="hl-4">headers</span><span class="hl-1">[</span><span class="hl-2">&quot;x-ja4&quot;</span><span class="hl-1">] </span><span class="hl-3">as</span><span class="hl-1"> </span><span class="hl-7">string</span><span class="hl-1"> | </span><span class="hl-7">undefined</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-4">ja3:</span><span class="hl-1"> </span><span class="hl-4">req</span><span class="hl-1">.</span><span class="hl-4">headers</span><span class="hl-1">[</span><span class="hl-2">&quot;x-ja3&quot;</span><span class="hl-1">] </span><span class="hl-3">as</span><span class="hl-1"> </span><span class="hl-7">string</span><span class="hl-1"> | </span><span class="hl-7">undefined</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-4">headerOrder:</span><span class="hl-1"> </span><span class="hl-4">Object</span><span class="hl-1">.</span><span class="hl-0">keys</span><span class="hl-1">(</span><span class="hl-4">req</span><span class="hl-1">.</span><span class="hl-4">headers</span><span class="hl-1">),</span><br/><span class="hl-1">		},</span><br/><span class="hl-1">	});</span><br/><br/><span class="hl-1">	</span><span class="hl-4">res</span><span class="hl-1">.</span><span class="hl-0">json</span><span class="hl-1">(</span><span class="hl-4">result</span><span class="hl-1">);</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<hr>
+<h2 id="storage-adapters" class="tsd-anchor-link">Storage adapters<a href="#storage-adapters" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<table>
+<thead>
+<tr>
+<th>Adapter</th>
+<th>Import</th>
+<th>Use case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>In-memory <em>(default)</em></td>
+<td><code>createTlsStorage</code></td>
+<td>Dev / testing / single-process</td>
+</tr>
+<tr>
+<td>SQLite</td>
+<td><code>createSqliteAdapter</code></td>
+<td>Single-process production</td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td><code>createPostgresAdapter</code></td>
+<td>Multi-process / HA</td>
+</tr>
+<tr>
+<td>Redis</td>
+<td><code>createRedisAdapter</code></td>
+<td>Distributed / low-latency</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="typescript"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">createSqliteAdapter</span><span class="hl-1">, </span><span class="hl-4">TlsManager</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&quot;tls-devicer&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">tlsStorage</span><span class="hl-1"> = </span><span class="hl-0">createSqliteAdapter</span><span class="hl-1">(</span><span class="hl-2">&quot;./data/tls-history.db&quot;</span><span class="hl-1">);</span><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">tlsStorage</span><span class="hl-1">.</span><span class="hl-0">init</span><span class="hl-1">();</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">tlsManager</span><span class="hl-1"> = </span><span class="hl-5">new</span><span class="hl-1"> </span><span class="hl-0">TlsManager</span><span class="hl-1">({</span><br/><span class="hl-1">	</span><span class="hl-4">licenseKey:</span><span class="hl-1"> </span><span class="hl-4">process</span><span class="hl-1">.</span><span class="hl-4">env</span><span class="hl-1">.</span><span class="hl-6">DEVICER_LICENSE_KEY</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-4">storage:</span><span class="hl-1"> </span><span class="hl-4">tlsStorage</span><span class="hl-1">,</span><br/><span class="hl-1">});</span>
+</code><button type="button">Copy</button></pre>
+
+<hr>
+<h2 id="recommended-setup" class="tsd-anchor-link">Recommended setup<a href="#recommended-setup" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>Stock nginx cannot generate JA4 or expose ClientHello extension lists through
 variables. That means the following variables do not exist in standard nginx:</p>
 <ul>
@@ -27,8 +112,8 @@ variables. That means the following variables do not exist in standard nginx:</p
 <p>Use nginx as a pass-through layer for headers that were already added by an
 upstream edge.</p>
 <h3 id="cloudflare-to-nginx-to-app" class="tsd-anchor-link">Cloudflare to nginx to app<a href="#cloudflare-to-nginx-to-app" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
-<p>tls-devicer accepts <code>cf-ja4</code> directly, but many applications prefer normalizing
-that to <code>x-ja4</code> before it reaches Node.</p>
+<p><code>tls-devicer</code> accepts <code>cf-ja4</code> directly, but many applications prefer
+normalizing that to <code>x-ja4</code> before it reaches Node.</p>
 <p>This method requires a Cloudflare Enterprise subscription.</p>
 <pre><code class="nginx">server {
 	listen 443 ssl http2;
@@ -44,10 +129,7 @@ that to <code>x-ja4</code> before it reaches Node.</p>
 		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 		proxy_set_header X-Forwarded-Proto $scheme;
 
-		# Cloudflare-managed JA4 header forwarded to your app.
 		proxy_set_header X-JA4 $http_cf_ja4;
-
-		# Optional JA3 alias if your upstream provides it.
 		proxy_set_header X-JA3 $http_cf_ja3_fingerprint;
 	}
 }
@@ -61,37 +143,71 @@ Cloudflare header through unchanged. <code>tls-devicer</code> supports both <cod
 <ol>
 <li>Use another edge or extension that computes JA4 and injects it before the
 request reaches your app.</li>
-<li>Run tls-devicer without JA4 and rely on the signals nginx can actually
+<li>Run <code>tls-devicer</code> without JA4 and rely on the signals nginx can actually
 expose, such as header order and selected TLS metadata available from other
 headers.</li>
 </ol>
-<p>For plain nginx, do not expect native JA4, raw extension-order, or client HTTP/2
-SETTINGS extraction.</p>
-<h3 id="documentation" class="tsd-anchor-link">Documentation<a href="#documentation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
-<p>This project uses typedoc and autodeploys via GitHub Pages. You can view the
-generated documentation <a href="https://gatewaycorporate.github.io/tls-devicer/">here</a>.</p>
-<h2 id="installation" class="tsd-anchor-link">Installation<a href="#installation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
-<p>You can install ip-devicer and tls-devicer alongside FP-Devicer with</p>
-<pre><code class="bash"><span class="hl-6">npm</span><span class="hl-1"> </span><span class="hl-3">install</span><span class="hl-1"> </span><span class="hl-3">devicer.js</span><span class="hl-1"> </span><span class="hl-3">ip-devicer</span><span class="hl-1"> </span><span class="hl-3">tls-devicer</span>
+<p>For plain nginx, do not expect native JA4, raw extension-order, or client
+HTTP/2 SETTINGS extraction.</p>
+<hr>
+<h2 id="plugin-pipeline" class="tsd-anchor-link">Plugin pipeline<a href="#plugin-pipeline" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Reference deployments typically bundle <code>ip-devicer</code> and <code>tls-devicer</code> together
+as the network-intelligence pair.</p>
+<pre><code class="text">identify(payload, context)
+   │
+   ├─ &#39;ip&#39;  post-processor  (ip-devicer, optional companion bundle)
+   │     └─&gt; complementary geo / ASN / risk signals
+   │
+   └─ &#39;tls&#39; post-processor  (tls-devicer)
+         ├─ compares JA4 / JA3 / HTTP/2 / header signals
+         └─&gt; result.tlsConsistency + result.tlsConfidenceBoost
 </code><button type="button">Copy</button></pre>
 
-<p>You can also install the meta-package for the entire Devicer Intelligence Suite
-with</p>
-<pre><code class="bash"><span class="hl-6">npm</span><span class="hl-1"> </span><span class="hl-3">install</span><span class="hl-1"> </span><span class="hl-3">@gatewaycorporate/devicer-intel</span>
+<hr>
+<h2 id="enrichment-result-shape" class="tsd-anchor-link">Enrichment result shape<a href="#enrichment-result-shape" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="typescript"><span class="hl-1">{</span><br/><span class="hl-1">  </span><span class="hl-8">tlsConsistency</span><span class="hl-1">: {</span><br/><span class="hl-1">    </span><span class="hl-8">consistencyScore</span><span class="hl-1">: </span><span class="hl-4">number</span><span class="hl-1">;</span><br/><span class="hl-1">    </span><span class="hl-8">ja4Match</span><span class="hl-1">: </span><span class="hl-4">boolean</span><span class="hl-1"> | </span><span class="hl-5">null</span><span class="hl-1">;</span><br/><span class="hl-1">    </span><span class="hl-8">ja3Match</span><span class="hl-1">: </span><span class="hl-4">boolean</span><span class="hl-1"> | </span><span class="hl-5">null</span><span class="hl-1">;</span><br/><span class="hl-1">    </span><span class="hl-8">cipherJaccard</span><span class="hl-1">: </span><span class="hl-4">number</span><span class="hl-1">;</span><br/><span class="hl-1">    </span><span class="hl-8">extensionJaccard</span><span class="hl-1">: </span><span class="hl-4">number</span><span class="hl-1">;</span><br/><span class="hl-1">    </span><span class="hl-8">http2Score</span><span class="hl-1">: </span><span class="hl-4">number</span><span class="hl-1">;</span><br/><span class="hl-1">    </span><span class="hl-8">headerOrderScore</span><span class="hl-1">: </span><span class="hl-4">number</span><span class="hl-1">;</span><br/><span class="hl-1">    </span><span class="hl-8">headerValueScore</span><span class="hl-1">: </span><span class="hl-4">number</span><span class="hl-1">;</span><br/><span class="hl-1">    </span><span class="hl-8">tlshScore</span><span class="hl-1">: </span><span class="hl-4">number</span><span class="hl-1"> | </span><span class="hl-5">null</span><span class="hl-1">;</span><br/><span class="hl-1">    </span><span class="hl-8">isNewDevice</span><span class="hl-1">: </span><span class="hl-4">boolean</span><span class="hl-1">;</span><br/><span class="hl-1">    </span><span class="hl-8">factors</span><span class="hl-1">: </span><span class="hl-4">string</span><span class="hl-1">[];</span><br/><span class="hl-1">  };</span><br/><span class="hl-1">  </span><span class="hl-4">tlsConfidenceBoost</span><span class="hl-1">?: </span><span class="hl-4">number</span><span class="hl-1">;</span><br/><span class="hl-1">}</span>
 </code><button type="button">Copy</button></pre>
 
+<hr>
+<h2 id="license-tiers" class="tsd-anchor-link">License tiers<a href="#license-tiers" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Price</th>
+<th>Devices</th>
+<th>Capability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Free</td>
+<td>$0</td>
+<td>10,000</td>
+<td>Basic features only</td>
+</tr>
+<tr>
+<td>Pro</td>
+<td>$49 / mo</td>
+<td>Unlimited</td>
+<td>Single-server production</td>
+</tr>
+<tr>
+<td>Enterprise</td>
+<td>$299 / mo</td>
+<td>Unlimited</td>
+<td>Multi-server production</td>
+</tr>
+</tbody>
+</table>
+<p>Production use requires a paid license. You can obtain a dual-use key for
+<code>tls-devicer</code> and <code>ip-devicer</code> through <a href="http://polar.sh">polar.sh</a>
+<a href="https://buy.polar.sh/polar_cl_0Y4djPLDe5yLdNUDKdtPGlFW5TG2ZpFD5qkb93HsSQc">here</a>.</p>
+<hr>
+<h2 id="api-reference" class="tsd-anchor-link">API reference<a href="#api-reference" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>This project uses TypeDoc and publishes documentation at
+<a href="https://gatewaycorporate.github.io/tls-devicer/">gatewaycorporate.github.io/tls-devicer</a>.</p>
+<hr>
 <h2 id="license" class="tsd-anchor-link">License<a href="#license" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
-<p>Published under the <strong>Business Source License 1.1 (BSL-1.1)</strong></p>
-<ul>
-<li>Free for dev/testing/personal use</li>
-<li>Production use requires a paid license from <a href="http://Polar.sh">Polar.sh</a></li>
-<li>Free tier has device count limits and basic features only</li>
-<li>Pro tier can operate on a single server and has no device count limits</li>
-<li>Enterprise can operate on any number of servers and has no device count limits</li>
-</ul>
-<p>Pass the key in the constructor to remove restrictions</p>
-<h2 id="obtaining-a-key" class="tsd-anchor-link">Obtaining a Key<a href="#obtaining-a-key" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
-<p>tls-devicer uses polar.js for key verification. You can obtain a key for dual
-use of this library and ip-devicer by purchasing one
-<a href="https://buy.polar.sh/polar_cl_0Y4djPLDe5yLdNUDKdtPGlFW5TG2ZpFD5qkb93HsSQc">here</a></p>
-</div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#tls-devicer"><span>tls-<wbr/>devicer</span></a><ul><li><a href="#developed-by-gateway-corporate-solutions"><span>Developed by <wbr/>Gateway <wbr/>Corporate <wbr/>Solutions</span></a></li><li><a href="#usage"><span>Usage</span></a></li><li><a href="#recommended-setup-nginx-w-cloudflare"><span>Recommended <wbr/>Setup (<wbr/>Nginx w/ <wbr/>Cloud<wbr/>Flare)</span></a></li><li><ul><li><a href="#cloudflare-to-nginx-to-app"><span>Cloudflare to nginx to app</span></a></li><li><a href="#if-nginx-is-your-tls-edge"><span>If nginx is your <wbr/>TLS edge</span></a></li><li><a href="#documentation"><span>Documentation</span></a></li></ul></li><li><a href="#installation"><span>Installation</span></a></li><li><a href="#license"><span>License</span></a></li><li><a href="#obtaining-a-key"><span>Obtaining a <wbr/>Key</span></a></li></ul></div></details></div><div class="site-menu"><nav class="tsd-navigation"><a href="modules.html">tls-devicer</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>
+<p>Business Source License 1.1 — see <a href="media/license.txt">license.txt</a>.</p>
+</div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#tls-devicer"><span>tls-<wbr/>devicer</span></a><ul><li><a href="#overview"><span>Overview</span></a></li><li><ul><li><a href="#what-it-does"><span>What it does</span></a></li></ul></li><li><a href="#installation"><span>Installation</span></a></li><li><a href="#quick-start"><span>Quick start</span></a></li><li><a href="#storage-adapters"><span>Storage adapters</span></a></li><li><a href="#recommended-setup"><span>Recommended setup</span></a></li><li><ul><li><a href="#cloudflare-to-nginx-to-app"><span>Cloudflare to nginx to app</span></a></li><li><a href="#if-nginx-is-your-tls-edge"><span>If nginx is your <wbr/>TLS edge</span></a></li></ul></li><li><a href="#plugin-pipeline"><span>Plugin pipeline</span></a></li><li><a href="#enrichment-result-shape"><span>Enrichment result shape</span></a></li><li><a href="#license-tiers"><span>License tiers</span></a></li><li><a href="#api-reference"><span>API reference</span></a></li><li><a href="#license"><span>License</span></a></li></ul></div></details></div><div class="site-menu"><nav class="tsd-navigation"><a href="modules.html">tls-devicer</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>
